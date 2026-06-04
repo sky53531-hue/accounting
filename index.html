@@ -722,7 +722,7 @@ function renderCreditPage(){
 }
 function selCard(i){
   crCardIdx=i;
-  document.querySelectorAll('.ctab').forEach((t,j)=>t.classList.toggle('on',j===i));
+  document.querySelectorAll('.ctab').forEach((t,j)=>t.classList.toggle('on',j===i+1));
   document.getElementById('cr-all-view').style.display=i===-1?'block':'none';
   document.getElementById('cr-card-view').style.display=i===-1?'none':'block';
   if(i===-1) renderAllCards();
