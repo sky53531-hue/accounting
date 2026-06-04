@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>記帳 App 圖示產生器</title>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; background: #121212; color: #e0e0e0; min-height: 100vh; box-sizing: border-box; }
+  h2 { margin-bottom: 8px; font-size: 22px; color: #00BFA5; }
+  .sub { color: #9e9e9e; font-size: 14px; margin-bottom: 28px; text-align: center; }
+  .upload-area { border: 2px dashed rgba(0,191,165,.4); border-radius: 16px; padding: 30px 40px; text-align: center; cursor: pointer; margin-bottom: 24px; transition: .2s; background: #1e1e1e; }
+  .upload-area:hover { border-color: #00BFA5; background: rgba(0,191,165,.05); }
+  .upload-area input { display: none; }
+  .upload-area .ic { font-size: 40px; margin-bottom: 10px; }
+  .upload-area p { color: #9e9e9e; font-size: 14px; margin: 0; }
+  canvas { border-radius: 24px; box-shadow: 0 8px 32px rgba(0,0,0,.5); margin-bottom: 24px; display: none; }
+  .btn { padding: 14px 36px; font-size: 16px; font-weight: 700; background: #00BFA5; color: #fff; border: none; border-radius: 12px; cursor: pointer; display: none; margin-bottom: 20px; transition: .15s; }
+  .btn:hover { background: #00897B; }
+  .steps { background: #1e1e1e; border-radius: 12px; padding: 20px 24px; max-width: 400px; width: 100%; border: 1px solid rgba(255,255,255,.08); }
+  .steps h3 { font-size: 14px; color: #9e9e9e; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 12px; }
+  .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; font-size: 14px; }
+  .step:last-child { margin-bottom: 0; }
+  .num { width: 22px; height: 22px; border-radius: 50%; background: #00BFA5; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .hint { color: #00BFA5; font-size: 14px; margin-bottom: 16px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h2>💳 記帳 App 圖示產生器</h2>
+<p class="sub">選擇照片，自動裁切成圓角正方形圖示</p>
+
+<div class="upload-area" onclick="document.getElementById('f').click()">
+  <div class="ic">🖼</div>
+  <p>點此選擇圖片<br><span style="font-size:12px">JPG / PNG / HEIC 皆可</span></p>
+  <input type="file" id="f" accept="image/*" onchange="loadImg(this)">
+</div>
+
+<canvas id="c" width="256" height="256"></canvas>
+<p class="hint" id="hint" style="display:none">預覽如上，確認後點下載</p>
+<button class="btn" id="btn" onclick="download()">⬇ 下載 apple-touch-icon.png</button>
+
+<div class="steps">
+  <h3>使用步驟</h3>
+  <div class="step"><div class="num">1</div><div>選擇照片，預覽圖示效果</div></div>
+  <div class="step"><div class="num">2</div><div>點「下載」，儲存 <strong>apple-touch-icon.png</strong></div></div>
+  <div class="step"><div class="num">3</div><div>把下載的檔案放進 <strong>accounting-app</strong> 資料夾（覆蓋舊的）</div></div>
+  <div class="step"><div class="num">4</div><div>用 Claude 幫你 push 到 GitHub</div></div>
+  <div class="step"><div class="num">5</div><div>手機刪除舊捷徑，重新加入主畫面</div></div>
+</div>
+
+<script>
+var full = document.createElement('canvas');
+full.width = 512; full.height = 512;
+
+function loadImg(input) {
+  var img = new Image();
+  img.onload = function() {
+    var ctx512 = full.getContext('2d');
+    ctx512.clearRect(0, 0, 512, 512);
+    ctx512.beginPath();
+    ctx512.roundRect(0, 0, 512, 512, 90);
+    ctx512.clip();
+    var size = Math.min(img.width, img.height);
+    var sx = (img.width - size) / 2;
+    var sy = (img.height - size) / 2;
+    ctx512.drawImage(img, sx, sy, size, size, 0, 0, 512, 512);
+
+    var preview = document.getElementById('c');
+    var ctx = preview.getContext('2d');
+    ctx.clearRect(0, 0, 256, 256);
+    ctx.beginPath();
+    ctx.roundRect(0, 0, 256, 256, 44);
+    ctx.clip();
+    ctx.drawImage(img, sx, sy, size, size, 0, 0, 256, 256);
+
+    preview.style.display = 'block';
+    document.getElementById('btn').style.display = 'inline-block';
+    document.getElementById('hint').style.display = 'block';
+  };
+  img.src = URL.createObjectURL(input.files[0]);
+}
+
+function download() {
+  var a = document.createElement('a');
+  a.download = 'apple-touch-icon.png';
+  a.href = full.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>

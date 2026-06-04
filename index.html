@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>個人記帳</title>
-<link rel="manifest" id="pwa-manifest" href="manifest.json">
-<link rel="apple-touch-icon" id="app-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="個人記帳">
@@ -354,20 +354,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
     <div id="cat-list"></div>
   </div>
   <div class="card">
-    <div class="card-title">APP 主畫面圖示</div>
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
-      <img id="icon-preview" src="icon.svg" style="width:72px;height:72px;border-radius:16px;border:2px solid var(--bdr);object-fit:cover;flex-shrink:0">
-      <div style="flex:1">
-        <div style="font-size:13px;color:var(--tx2);margin-bottom:10px">更換圖示後需重新加入主畫面才會生效</div>
-        <label style="display:inline-block;padding:8px 16px;background:var(--acc);color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
-          選擇圖片
-          <input type="file" id="icon-file" accept="image/*" style="display:none" onchange="changeIcon(this)">
-        </label>
-      </div>
-    </div>
-    <button class="btn btn-ghost btn-sm" onclick="resetIcon()">還原預設圖示</button>
-  </div>
-  <div class="card">
     <div class="card-title">資料管理</div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-ghost" style="flex:1" onclick="reloadAll()">重新載入</button>
@@ -391,7 +377,7 @@ const CAT_COLORS=['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#
 const BUCKET_LABEL={account:'帳戶',wallet:'錢包',piggy:'存錢筒'};
 
 let D={cards:[],categories:[...DEF_CATS],records:[],recurring:[]};
-let CFG={apiKey:'',binId:'',iconUrl:''};
+let CFG={apiKey:'',binId:''};
 let entryMode='income';
 let isInstall=false;
 let isRecurring=false;
@@ -1197,39 +1183,7 @@ function exportExcel(){
 function renderSettings(){
   document.getElementById('s-key').value=CFG.apiKey||'';
   document.getElementById('s-bin').value=CFG.binId||'';
-  document.getElementById('icon-preview').src=CFG.iconUrl||'icon.svg';
   renderCardList(); renderCatList();
-}
-function applyIcon(){
-  const src=CFG.iconUrl||'icon.svg';
-  document.getElementById('app-icon').href=src;
-  const manifest={
-    name:'個人記帳系統',short_name:'個人記帳',
-    description:'個人收支記帳與信用卡管理',
-    start_url:'./index.html',display:'standalone',
-    background_color:'#121212',theme_color:'#121212',
-    orientation:'portrait',
-    icons:[{src,sizes:'any',purpose:'any maskable'}]
-  };
-  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
-  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
-}
-function changeIcon(input){
-  const file=input.files[0]; if(!file) return;
-  if(file.size>800*1024){ tip('圖片請小於 800KB',false); input.value=''; return; }
-  const reader=new FileReader();
-  reader.onload=e=>{
-    CFG.iconUrl=e.target.result;
-    cfgSave(); applyIcon();
-    document.getElementById('icon-preview').src=CFG.iconUrl;
-    tip('✓ 圖示已更換，請重新加入主畫面');
-  };
-  reader.readAsDataURL(file);
-}
-function resetIcon(){
-  CFG.iconUrl=''; cfgSave(); applyIcon();
-  document.getElementById('icon-preview').src='icon.svg';
-  tip('✓ 已還原預設圖示，請重新加入主畫面');
 }
 async function saveCfg(){
   CFG.apiKey=document.getElementById('s-key').value.trim();
@@ -1315,7 +1269,6 @@ function clearCache(){
 // ── Init ────────────────────────────────────────────────────────────────
 async function init(){
   cfgLoad();
-  applyIcon();
   await loadData();
   document.getElementById('e-date').value=todayStr();
   ovYm=ymStr(new Date());
