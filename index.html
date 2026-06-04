@@ -377,6 +377,7 @@ let editId=null, editMode='income';
 // ── Utils ──────────────────────────────────────────────────────────────
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function nt(n){ return 'NT$'+Math.abs(Math.round(n)).toLocaleString(); }
+function ntBal(n){ return (n<0?'-':'')+'NT$'+Math.abs(Math.round(n)).toLocaleString(); }
 function ymStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
 function ymLabel(ym){ const[y,m]=ym.split('-'); return y+'年'+parseInt(m)+'月'; }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -724,9 +725,14 @@ function refreshCurrentView(){
 // ── Overview Page ──────────────────────────────────────────────────────
 function updateBalanceCards(){
   const b=getBalances();
-  document.getElementById('bal-account').textContent=nt(b.account);
-  document.getElementById('bal-wallet').textContent=nt(b.wallet);
-  document.getElementById('bal-piggy').textContent=nt(b.piggy);
+  const setBal=(id,val)=>{
+    const el=document.getElementById(id);
+    el.textContent=ntBal(val);
+    el.style.color=val<0?'var(--red)':'';
+  };
+  setBal('bal-account',b.account);
+  setBal('bal-wallet',b.wallet);
+  setBal('bal-piggy',b.piggy);
 }
 function chMonth(d){ const[y,m]=ovYm.split('-').map(Number); const nd=new Date(y,m-1+d,1); ovYm=ymStr(nd); renderOverview(); }
 function renderOverview(){
