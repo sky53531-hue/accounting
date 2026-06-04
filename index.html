@@ -186,12 +186,16 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
       <div class="fg">
         <label>付款類型</label>
         <div class="pay-row">
-          <div class="pay-opt on" id="pay-lump" onclick="setInstall(false)">付清</div>
-          <div class="pay-opt" id="pay-inst" onclick="setInstall(true)">分期</div>
+          <div class="pay-opt on" id="pay-lump" onclick="setPayType('lump')">付清</div>
+          <div class="pay-opt" id="pay-inst" onclick="setPayType('inst')">分期</div>
+          <div class="pay-opt" id="pay-recurring" onclick="setPayType('recurring')">每月固定</div>
         </div>
       </div>
       <div id="inst-section" style="display:none">
         <div class="fg"><label>分期期數</label><input type="number" id="e-inst" placeholder="例：6" min="2" inputmode="numeric"></div>
+      </div>
+      <div id="recurring-section" style="display:none">
+        <div class="fg"><label>起始月份</label><input type="month" id="e-rec-start"></div>
       </div>
     </div>
     <!-- 資金轉移專區 -->
@@ -288,6 +292,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
         <div class="card-title">未來 12 個月分期規劃</div>
         <div id="cr-all-schedule"></div>
       </div>
+      <div class="card">
+        <div class="card-title">每月固定扣款（所有卡）</div>
+        <div id="cr-all-recurring"></div>
+      </div>
     </div>
     <!-- 單張卡片 -->
     <div id="cr-card-view">
@@ -302,6 +310,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
       <div class="card"><div class="card-title">本期帳單</div><div id="cr-billing"></div></div>
       <div class="card"><div class="card-title">消費明細</div><div id="cr-detail"></div></div>
       <div class="card"><div class="card-title">分期追蹤</div><div id="cr-inst"></div></div>
+      <div class="card"><div class="card-title">每月固定扣款</div><div id="cr-recurring"></div></div>
       <div class="card"><div class="card-title">每月應繳摘要</div><div id="cr-monthly"></div></div>
       <button class="btn btn-ghost" style="margin-bottom:12px" onclick="exportExcel()">📊 匯出 Excel</button>
     </div>
@@ -365,10 +374,11 @@ const DEF_CATS=['餐飲','交通','購物','娛樂','醫療','居家','其他','
 const CAT_COLORS=['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FF6B6B','#45B7D1','#96CEB4','#FFEAA7'];
 const BUCKET_LABEL={account:'帳戶',wallet:'錢包',piggy:'存錢筒'};
 
-let D={cards:[],categories:[...DEF_CATS],records:[]};
+let D={cards:[],categories:[...DEF_CATS],records:[],recurring:[]};
 let CFG={apiKey:'',binId:''};
 let entryMode='income';
 let isInstall=false;
+let isRecurring=false;
 let ovYm=ymStr(new Date());
 let crCardIdx=-1;
 let pieChart=null, barChart=null;
@@ -446,7 +456,7 @@ async function loadData(showTip){
     const r=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}/latest`,{headers:{'X-Master-Key':CFG.apiKey}});
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j=await r.json();
-    D={cards:[],categories:[...DEF_CATS],records:[],...j.record};
+    D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],...j.record};
     if(!D.categories.length) D.categories=[...DEF_CATS];
     migrateAll();
     localSave();
@@ -516,14 +526,23 @@ function setMode(m){
   document.getElementById('e-cat-row').style.display=m==='transfer'?'none':'block';
   document.getElementById('e-credit-sec').style.display=m==='credit'?'block':'none';
   document.getElementById('e-transfer-sec').style.display=m==='transfer'?'block':'none';
-  if(m!=='credit'){ isInstall=false; document.getElementById('inst-section').style.display='none'; }
+  if(m!=='credit'){
+    isInstall=false; isRecurring=false;
+    document.getElementById('inst-section').style.display='none';
+    document.getElementById('recurring-section').style.display='none';
+  }
   rebuildCatSelect();
 }
-function setInstall(v){
-  isInstall=v;
-  document.getElementById('pay-lump').classList.toggle('on',!v);
-  document.getElementById('pay-inst').classList.toggle('on',v);
-  document.getElementById('inst-section').style.display=v?'block':'none';
+function setPayType(t){
+  isInstall=t==='inst';
+  isRecurring=t==='recurring';
+  ['lump','inst','recurring'].forEach(x=>document.getElementById('pay-'+x).classList.toggle('on',x===t));
+  document.getElementById('inst-section').style.display=isInstall?'block':'none';
+  document.getElementById('recurring-section').style.display=isRecurring?'block':'none';
+  if(isRecurring){
+    const el=document.getElementById('e-rec-start');
+    if(!el.value) el.value=ymStr(new Date());
+  }
 }
 function rebuildCatSelect(){
   document.getElementById('e-cat').innerHTML=D.categories.map(c=>`<option>${c}</option>`).join('');
@@ -608,9 +627,21 @@ async function saveRecord(){
     if(entryMode==='income') rec.to='account';
     else rec.from='wallet';
   } else if(entryMode==='credit'){
-    rec.category=cat;
     const cardSel=document.getElementById('e-card');
     if(!cardSel.value){ tip('請選擇信用卡',false); return; }
+    if(isRecurring){
+      const startYm=document.getElementById('e-rec-start').value||ymStr(new Date());
+      if(!D.recurring) D.recurring=[];
+      D.recurring.push({id:uid(),name:cat,cardId:cardSel.value,amount:amt,category:cat,startYm,note});
+      loading(true); await saveData(); loading(false);
+      tip('✓ 已新增每月固定扣款');
+      document.getElementById('e-amt').value='';
+      document.getElementById('e-note').value='';
+      setPayType('lump');
+      renderRecent(); updateBalanceCards();
+      return;
+    }
+    rec.category=cat;
     rec.cardId=cardSel.value;
     rec.installment=isInstall;
     rec.installmentTotal=0;
@@ -741,7 +772,8 @@ function renderOverview(){
   const recs=D.records.filter(r=>r.date.slice(0,7)===ovYm);
   const inc=recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
   const cash=recs.filter(r=>r.type==='cash').reduce((s,r)=>s+r.amount,0);
-  const cr=recs.filter(r=>r.type==='credit').reduce((s,r)=>s+r.amount,0);
+  const cr=recs.filter(r=>r.type==='credit').reduce((s,r)=>s+r.amount,0)
+    +(D.recurring||[]).filter(r=>r.startYm<=ovYm).reduce((s,r)=>s+r.amount,0);
   document.getElementById('ov-in').textContent=nt(inc);
   document.getElementById('ov-out').textContent=nt(cash);
   document.getElementById('ov-cr').textContent=nt(cr);
@@ -854,16 +886,18 @@ function renderAllCards(){
     const p=billPeriod(billingYm,card.billingDate);
     const lump=allCard.filter(r=>!r.installment&&r.date>=p.ss&&r.date<=p.es).reduce((s,r)=>s+r.amount,0);
     const inst=instPaymentsForYm(allCard.filter(r=>r.installment),card,billingYm).reduce((s,x)=>s+x.amt,0);
-    const total=lump+inst; grandTotal+=total;
+    const recur=(D.recurring||[]).filter(r=>r.cardId===card.id&&r.startYm<=billingYm).reduce((s,r)=>s+r.amount,0);
+    const total=lump+inst+recur; grandTotal+=total;
     billingRows+=`<tr>
       <td><div style="font-weight:500">${card.name}</div><div style="font-size:11px;color:var(--tx2)">${p.ss}～${p.es}</div></td>
       <td class="c-org">${lump?nt(lump):'-'}</td>
       <td class="c-org">${inst?nt(inst):'-'}</td>
+      <td style="color:var(--purple)">${recur?nt(recur):'-'}</td>
       <td style="font-weight:700;color:var(--acc)">${nt(total)}</td>
     </tr>`;
   });
   document.getElementById('cr-all-billing').innerHTML=`
-    <table class="stbl"><thead><tr><th>信用卡</th><th>付清</th><th>分期款</th><th>應繳</th></tr></thead>
+    <table class="stbl"><thead><tr><th>信用卡</th><th>付清</th><th>分期款</th><th>每月固定</th><th>應繳</th></tr></thead>
     <tbody>${billingRows}</tbody></table>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;border-top:1px solid var(--bdr);margin-top:4px">
       <span style="font-weight:700">本期總應繳</span>
@@ -923,6 +957,50 @@ function renderAllCards(){
         <td style="font-weight:700;color:${row.total?'var(--acc)':'var(--tx2)'}">${row.total?nt(row.total):'-'}</td>
       </tr>`).join('')}
     </tbody></table>`;
+  renderAllRecurring();
+}
+function renderRecurring(card){
+  const recs=(D.recurring||[]).filter(r=>r.cardId===card.id);
+  const el=document.getElementById('cr-recurring');
+  if(!recs.length){ el.innerHTML='<div class="empty">無每月固定扣款</div>'; return; }
+  el.innerHTML=recs.map(r=>`
+    <div class="ri">
+      <div style="flex:1;min-width:0">
+        <div class="ri-cat">${r.category||r.name}<span class="badge" style="background:rgba(206,147,216,.15);color:var(--purple)">每月固定</span></div>
+        <div class="ri-sub">起：${r.startYm}${r.note?' · '+r.note:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="ri-amt c-org">${nt(r.amount)}/月</div>
+        <button class="btn-del-rec" onclick="delRecurring('${r.id}')">🗑 取消</button>
+      </div>
+    </div>`).join('');
+}
+function renderAllRecurring(){
+  const all=D.recurring||[];
+  const el=document.getElementById('cr-all-recurring');
+  if(!all.length){ el.innerHTML='<div class="empty">無每月固定扣款</div>'; return; }
+  el.innerHTML=all.map(r=>{
+    const card=D.cards.find(c=>c.id===r.cardId);
+    return `<div class="ri">
+      <div style="flex:1;min-width:0">
+        <div class="ri-cat">${r.category||r.name}<span class="badge" style="background:rgba(206,147,216,.15);color:var(--purple)">每月固定</span></div>
+        <div class="ri-sub">${card?.name||'未知卡'} · 起：${r.startYm}${r.note?' · '+r.note:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="ri-amt c-org">${nt(r.amount)}/月</div>
+        <button class="btn-del-rec" onclick="delRecurring('${r.id}')">🗑 取消</button>
+      </div>
+    </div>`;
+  }).join('');
+  const total=all.reduce((s,r)=>s+r.amount,0);
+  el.innerHTML+=`<div style="text-align:right;padding:10px 0 4px;border-top:1px solid var(--bdr);margin-top:4px">每月固定合計：<span style="color:var(--purple);font-weight:700">${nt(total)}/月</span></div>`;
+}
+async function delRecurring(id){
+  if(!confirm('確定取消此固定扣款項目？')) return;
+  if(!D.recurring) D.recurring=[];
+  D.recurring=D.recurring.filter(r=>r.id!==id);
+  loading(true); await saveData(); loading(false);
+  tip('已取消固定扣款'); renderCreditPage();
 }
 function renderCreditCard(){
   const card=D.cards[crCardIdx]; if(!card) return;
@@ -930,7 +1008,7 @@ function renderCreditCard(){
   const toYm=document.getElementById('cr-to').value||ymStr(new Date());
   const allCard=D.records.filter(r=>isCreditRec(r,card.id));
   const rangeRecs=allCard.filter(r=>r.date.slice(0,7)>=fromYm&&r.date.slice(0,7)<=toYm);
-  renderBilling(card,allCard); renderCrDetail(rangeRecs); renderInstTrack(allCard,card); renderMonthly(card,allCard,fromYm,toYm);
+  renderBilling(card,allCard); renderCrDetail(rangeRecs); renderInstTrack(allCard,card); renderRecurring(card); renderMonthly(card,allCard,fromYm,toYm);
 }
 function renderBilling(card,recs){
   const now=new Date(); const nowYm=ymStr(now);
@@ -938,13 +1016,15 @@ function renderBilling(card,recs){
   const p=billPeriod(billingYm,card.billingDate);
   const lump=recs.filter(r=>!r.installment&&r.date>=p.ss&&r.date<=p.es).reduce((s,r)=>s+r.amount,0);
   const inst=instPaymentsForYm(recs.filter(r=>r.installment),card,billingYm).reduce((s,x)=>s+x.amt,0);
+  const recur=(D.recurring||[]).filter(r=>r.cardId===card.id&&r.startYm<=billingYm).reduce((s,r)=>s+r.amount,0);
   document.getElementById('cr-billing').innerHTML=`
     <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">${p.ss} ～ ${p.es}（每月 ${card.billingDate} 號結帳）</div>
     <div class="ri"><span style="color:var(--tx2)">付清消費</span><span class="c-org">${nt(lump)}</span></div>
     <div class="ri"><span style="color:var(--tx2)">分期款</span><span class="c-org">${nt(inst)}</span></div>
+    ${recur?`<div class="ri"><span style="color:var(--tx2)">每月固定</span><span style="color:var(--purple)">${nt(recur)}</span></div>`:''}
     <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0">
       <span style="font-weight:700;font-size:15px">本期應繳</span>
-      <span style="font-size:22px;font-weight:800;color:var(--acc)">${nt(lump+inst)}</span>
+      <span style="font-size:22px;font-weight:800;color:var(--acc)">${nt(lump+inst+recur)}</span>
     </div>`;
 }
 function instPaymentsForYm(instRecs,card,targetYm){
@@ -1002,20 +1082,22 @@ function renderMonthly(card,recs,fromYm,toYm){
   while(cur<=limit){
     const lump=recs.filter(r=>!r.installment&&billYmFor(r.date,card.billingDate)===cur).reduce((s,r)=>s+r.amount,0);
     const inst=instPaymentsForYm(recs.filter(r=>r.installment),card,cur).reduce((s,x)=>s+x.amt,0);
-    const total=lump+inst;
-    if(total>0||cur<=toYm) rows.push({ym:cur,lump,inst,total});
+    const recur=(D.recurring||[]).filter(r=>r.cardId===card.id&&r.startYm<=cur).reduce((s,r)=>s+r.amount,0);
+    const total=lump+inst+recur;
+    if(total>0||cur<=toYm) rows.push({ym:cur,lump,inst,recur,total});
     cur=addMonths(cur,1); if(rows.length>36) break;
   }
   const nowYm=ymStr(new Date());
   const el=document.getElementById('cr-monthly');
   if(!rows.length){ el.innerHTML='<div class="empty">無資料</div>'; return; }
   el.innerHTML=`<table class="stbl">
-    <thead><tr><th>帳單月份</th><th>付清</th><th>分期款</th><th>應繳合計</th></tr></thead>
+    <thead><tr><th>帳單月份</th><th>付清</th><th>分期款</th><th>每月固定</th><th>應繳合計</th></tr></thead>
     <tbody>${rows.map(r=>`
       <tr style="${r.ym===nowYm?'background:rgba(0,191,165,.07)':''}">
         <td>${ymLabel(r.ym)}${r.ym===nowYm?' <span style="font-size:10px;color:var(--acc)">▸本期</span>':''}</td>
         <td class="c-org">${r.lump?nt(r.lump):'-'}</td>
         <td class="c-org">${r.inst?nt(r.inst):'-'}</td>
+        <td style="color:var(--purple)">${r.recur?nt(r.recur):'-'}</td>
         <td style="font-weight:700;color:var(--acc)">${nt(r.total)}</td>
       </tr>`).join('')}
     </tbody></table>`;
@@ -1092,7 +1174,7 @@ async function saveCfg(){
       await saveData();
       tip(`✓ 已上傳本機資料：${D.cards.length}張卡，${D.records.length}筆紀錄`);
     } else {
-      D={cards:[],categories:[...DEF_CATS],records:[],...remote};
+      D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],...remote};
       if(!D.categories.length) D.categories=[...DEF_CATS];
       migrateAll(); localSave();
       tip(`✓ 已從雲端載入：${D.cards.length}張卡，${D.records.length}筆紀錄`);
