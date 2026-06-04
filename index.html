@@ -1247,14 +1247,13 @@ async function addCat(){
   renderCatList(); rebuildCatSelect(); tip('✓ 已新增分類');
 }
 async function delCat(name){
-  if(DEF_CATS.includes(name)){ tip('預設分類不可刪除',false); return; }
   D.categories=D.categories.filter(c=>c!==name);
   loading(true); await saveData(); loading(false);
   renderCatList(); rebuildCatSelect(); tip('已刪除');
 }
 function renderCatList(){
   document.getElementById('cat-list').innerHTML=D.categories.map(c=>
-    `<span class="chip">${c}${DEF_CATS.includes(c)?'':` <button onclick="delCat('${c}')">✕</button>`}</span>`).join('');
+    `<span class="chip">${c} <button onclick="delCat('${c}')">✕</button></span>`).join('');
 }
 async function reloadAll(){
   await loadData(true);
