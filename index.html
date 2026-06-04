@@ -290,12 +290,12 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
         <div id="cr-all-inst"></div>
       </div>
       <div class="card">
-        <div class="card-title">未來 12 個月分期規劃</div>
-        <div id="cr-all-schedule"></div>
-      </div>
-      <div class="card">
         <div class="card-title">每月固定扣款（所有卡）</div>
         <div id="cr-all-recurring"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">未來 12 個月分期規劃</div>
+        <div id="cr-all-schedule"></div>
       </div>
     </div>
     <!-- 單張卡片 -->
@@ -938,6 +938,7 @@ function renderAllCards(){
       未結清分期餘額合計：<span style="color:var(--red);font-weight:700">${nt(allInst.filter(x=>x.remain>0).reduce((s,x)=>s+x.remain*x.monthly,0))}</span>
     </div>`;
   }
+  renderAllRecurring();
   const scheduleRows=[];
   for(let mo=0;mo<12;mo++){
     const ym=addMonths(nowYm,mo); let total=0; const breakdown=[];
@@ -958,7 +959,6 @@ function renderAllCards(){
         <td style="font-weight:700;color:${row.total?'var(--acc)':'var(--tx2)'}">${row.total?nt(row.total):'-'}</td>
       </tr>`).join('')}
     </tbody></table>`;
-  renderAllRecurring();
 }
 function renderRecurring(card){
   const recs=(D.recurring||[]).filter(r=>r.cardId===card.id);
@@ -1034,7 +1034,7 @@ function renderCreditCard(){
   const toYm=document.getElementById('cr-to').value||ymStr(new Date());
   const allCard=D.records.filter(r=>isCreditRec(r,card.id));
   const rangeRecs=allCard.filter(r=>r.date.slice(0,7)>=fromYm&&r.date.slice(0,7)<=toYm);
-  renderBilling(card,allCard); renderCrDetail(rangeRecs); renderInstTrack(allCard,card); renderRecurring(card); renderMonthly(card,allCard,fromYm,toYm);
+  renderBilling(card,allCard); renderCrDetail(rangeRecs); renderInstTrack(allCard,card,toYm); renderRecurring(card); renderMonthly(card,allCard,fromYm,toYm);
 }
 function renderBilling(card,recs){
   const now=new Date(); const nowYm=ymStr(now);
@@ -1076,11 +1076,11 @@ function renderCrDetail(recs){
       <div class="ri-amt c-red">-${nt(r.amount)}</div>
     </div>`).join('');
 }
-function renderInstTrack(recs,card){
+function renderInstTrack(recs,card,viewYm){
   const inst=recs.filter(r=>r.installment&&r.installmentTotal>0);
   const el=document.getElementById('cr-inst');
   if(!inst.length){ el.innerHTML='<div class="empty">無分期記錄</div>'; return; }
-  const nowYm=ymStr(new Date());
+  const nowYm=viewYm||ymStr(new Date());
   el.innerHTML=inst.map(r=>{
     const startYm=billYmFor(r.date,card.billingDate);
     const paid=Math.min(Math.max(0,monthDiff(startYm,nowYm)+1),r.installmentTotal);
