@@ -359,7 +359,11 @@ async function testConn(){
   try{
     const r=await fetch(`https://api.jsonbin.io/v3/b/${bid}/latest`,{headers:{'X-Master-Key':key}});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    tip('✓ 連線成功');
+    const j=await r.json();
+    const rec=j.record||{};
+    const cards=(rec.cards||[]).length;
+    const records=(rec.records||[]).length;
+    tip(`✓ 連線成功｜${cards}張卡，${records}筆紀錄`);
   }catch(e){ tip('連線失敗：'+e.message,false); }
   loading(false);
 }
