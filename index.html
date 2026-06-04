@@ -12,7 +12,7 @@
   --bg:#121212;--sf:#1e1e1e;--card:#252525;--card2:#2d2d2d;
   --acc:#00BFA5;--acc2:#00897B;
   --tx:#e0e0e0;--tx2:#9e9e9e;
-  --red:#FF5252;--grn:#69F0AE;--org:#FFB74D;
+  --red:#FF5252;--grn:#69F0AE;--org:#FFB74D;--purple:#CE93D8;
   --bdr:rgba(255,255,255,.08);--r:12px
 }
 body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding-bottom:72px;font-size:15px}
@@ -28,10 +28,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 /* CARD */
 .card{background:var(--sf);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid var(--bdr)}
 .card-title{font-size:12px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
-/* TOGGLE */
-.toggle-row{display:flex;background:var(--card);border-radius:30px;padding:3px;margin-bottom:14px}
-.toggle-btn{flex:1;padding:9px;border:none;background:none;color:var(--tx2);border-radius:26px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
-.toggle-btn.on{background:var(--acc);color:#fff}
+/* MODE SELECTOR */
+.mode-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px}
+.mode-btn{padding:9px 4px;border:1.5px solid var(--bdr);background:var(--card);color:var(--tx2);border-radius:8px;cursor:pointer;text-align:center;font-size:12px;font-weight:600;transition:.15s;line-height:1.3}
+.mode-btn.on{border-color:var(--acc);color:var(--acc);background:rgba(0,191,165,.1)}
 /* FORM */
 .fg{margin-bottom:12px}
 .fg label{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px}
@@ -39,7 +39,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--acc)}
 .fg textarea{resize:none;height:68px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-/* PAYMENT OPTS */
+/* PAY OPTS */
 .pay-row{display:flex;gap:8px}
 .pay-opt{flex:1;padding:10px;border:1.5px solid var(--bdr);background:var(--card);color:var(--tx2);border-radius:8px;cursor:pointer;text-align:center;font-size:14px;font-weight:600;transition:.15s}
 .pay-opt.on{border-color:var(--acc);color:var(--acc);background:rgba(0,191,165,.1)}
@@ -50,6 +50,11 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 .btn-sm{padding:7px 14px;font-size:13px;width:auto;border-radius:7px}
 .btn-danger{background:rgba(255,82,82,.15);color:var(--red);border:1px solid rgba(255,82,82,.25)}
 .btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--tx2)}
+/* BALANCE CARDS */
+.bal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.bal-card{border-radius:var(--r);padding:14px 10px;text-align:center;border:1px solid var(--bdr)}
+.bal-card .bl{font-size:11px;font-weight:600;margin-bottom:6px;letter-spacing:.3px}
+.bal-card .bv{font-size:16px;font-weight:800;word-break:break-all}
 /* STATS */
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat-card{background:var(--sf);border-radius:var(--r);padding:12px 8px;text-align:center;border:1px solid var(--bdr)}
@@ -61,7 +66,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 .ri-cat{font-size:13px;font-weight:500}
 .ri-sub{font-size:11px;color:var(--tx2);margin-top:2px}
 .ri-amt{font-size:15px;font-weight:700}
-.ri-right{text-align:right}
 .badge{font-size:10px;padding:2px 7px;border-radius:10px;margin-left:4px;vertical-align:middle}
 /* MONTH NAV */
 .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;background:var(--sf);border-radius:var(--r);padding:10px 16px;border:1px solid var(--bdr)}
@@ -87,7 +91,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 .stbl tr:last-child td{border-bottom:none}
 /* MISC */
 .empty{text-align:center;color:var(--tx2);padding:28px;font-size:14px}
-.c-grn{color:var(--grn)}.c-red{color:var(--red)}.c-org{color:var(--org)}.c-acc{color:var(--acc)}
+.c-grn{color:var(--grn)}.c-red{color:var(--red)}.c-org{color:var(--org)}.c-acc{color:var(--acc)}.c-pur{color:var(--purple)}
 .chip{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--bdr);border-radius:20px;padding:5px 12px;font-size:13px;margin:3px}
 .chip button{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:15px;padding:0;line-height:1}
 .input-row{display:flex;gap:8px;align-items:flex-end}
@@ -96,7 +100,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 #loading{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:500}
 .spinner{width:36px;height:36px;border:3px solid var(--bdr);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:380px){.stat-card .sv{font-size:13px}.form-row{grid-template-columns:1fr}}
+@media(max-width:380px){.stat-card .sv{font-size:13px}.form-row{grid-template-columns:1fr}.bal-card .bv{font-size:13px}}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;display:flex;align-items:flex-end;justify-content:center}
 .modal-box{background:var(--sf);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:600px;padding:20px 16px 32px;max-height:90vh;overflow-y:auto}
@@ -117,24 +121,37 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 <div id="edit-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeEdit()">
   <div class="modal-box">
     <div class="modal-title">編輯紀錄<button onclick="closeEdit()">✕</button></div>
-    <div class="toggle-row" id="edit-type-toggle">
-      <button class="toggle-btn on" onclick="setEditType('expense',this)">支出</button>
-      <button class="toggle-btn" onclick="setEditType('income',this)">收入</button>
+    <div class="mode-row" id="ed-mode-row">
+      <div class="mode-btn" id="edm-income" onclick="setEditMode('income')">收入</div>
+      <div class="mode-btn" id="edm-cash" onclick="setEditMode('cash')">現金消費</div>
+      <div class="mode-btn" id="edm-credit" onclick="setEditMode('credit')">刷卡消費</div>
+      <div class="mode-btn" id="edm-transfer" onclick="setEditMode('transfer')">資金轉移</div>
     </div>
     <div class="form-row">
       <div class="fg"><label>日期</label><input type="date" id="ed-date"></div>
       <div class="fg"><label>金額 (NT$)</label><input type="number" id="ed-amt" placeholder="0" min="0" inputmode="decimal"></div>
     </div>
-    <div class="fg"><label>類別</label><select id="ed-cat"></select></div>
-    <div class="fg">
-      <label>付款方式</label>
-      <div class="pay-row">
-        <div class="pay-opt on" id="ed-pay-cash" onclick="setEditPayment('cash')">現金</div>
-        <div class="pay-opt" id="ed-pay-credit" onclick="setEditPayment('credit')">刷卡</div>
-      </div>
-    </div>
-    <div id="ed-credit-section" style="display:none">
+    <div class="fg" id="ed-cat-row"><label>類別</label><select id="ed-cat"></select></div>
+    <div id="ed-credit-sec" style="display:none">
       <div class="fg"><label>信用卡</label><select id="ed-card"></select></div>
+    </div>
+    <div id="ed-transfer-sec" style="display:none">
+      <div class="form-row">
+        <div class="fg"><label>從</label>
+          <select id="ed-from">
+            <option value="account">帳戶</option>
+            <option value="wallet">錢包</option>
+            <option value="piggy">存錢筒</option>
+          </select>
+        </div>
+        <div class="fg"><label>到</label>
+          <select id="ed-to">
+            <option value="wallet">錢包</option>
+            <option value="account">帳戶</option>
+            <option value="piggy">存錢筒</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="fg"><label>備註（選填）</label><textarea id="ed-note" placeholder="輸入備註..."></textarea></div>
     <div style="display:flex;gap:8px;margin-top:4px">
@@ -147,23 +164,20 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 <!-- ═══ 記帳 ════════════════════════════════════════════ -->
 <div id="pg-entry" class="pg on">
   <div class="card">
-    <div class="toggle-row" id="type-toggle">
-      <button class="toggle-btn on" onclick="setType('expense',this)">支出</button>
-      <button class="toggle-btn" onclick="setType('income',this)">收入</button>
+    <div class="mode-row" id="entry-mode-row">
+      <div class="mode-btn on" id="m-income" onclick="setMode('income')">收入</div>
+      <div class="mode-btn" id="m-cash" onclick="setMode('cash')">現金消費</div>
+      <div class="mode-btn" id="m-credit" onclick="setMode('credit')">刷卡消費</div>
+      <div class="mode-btn" id="m-transfer" onclick="setMode('transfer')">資金轉移</div>
     </div>
     <div class="form-row">
       <div class="fg"><label>日期</label><input type="date" id="e-date"></div>
       <div class="fg"><label>金額 (NT$)</label><input type="number" id="e-amt" placeholder="0" min="0" inputmode="decimal"></div>
     </div>
-    <div class="fg"><label>類別</label><select id="e-cat"></select></div>
-    <div class="fg">
-      <label>付款方式</label>
-      <div class="pay-row">
-        <div class="pay-opt on" id="pay-cash" onclick="setPayment('cash')">現金</div>
-        <div class="pay-opt" id="pay-credit" onclick="setPayment('credit')">刷卡</div>
-      </div>
-    </div>
-    <div id="credit-section" style="display:none">
+    <!-- 類別（收入/現金消費/刷卡消費顯示） -->
+    <div class="fg" id="e-cat-row"><label>類別</label><select id="e-cat"></select></div>
+    <!-- 刷卡消費專區 -->
+    <div id="e-credit-sec" style="display:none">
       <div class="fg"><label>信用卡</label><select id="e-card"></select></div>
       <div class="fg">
         <label>付款類型</label>
@@ -174,6 +188,25 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
       </div>
       <div id="inst-section" style="display:none">
         <div class="fg"><label>分期期數</label><input type="number" id="e-inst" placeholder="例：6" min="2" inputmode="numeric"></div>
+      </div>
+    </div>
+    <!-- 資金轉移專區 -->
+    <div id="e-transfer-sec" style="display:none">
+      <div class="form-row">
+        <div class="fg"><label>從</label>
+          <select id="e-from">
+            <option value="account">帳戶</option>
+            <option value="wallet">錢包</option>
+            <option value="piggy">存錢筒</option>
+          </select>
+        </div>
+        <div class="fg"><label>到</label>
+          <select id="e-to">
+            <option value="wallet">錢包</option>
+            <option value="account">帳戶</option>
+            <option value="piggy">存錢筒</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="fg"><label>備註（選填）</label><textarea id="e-note" placeholder="輸入備註..."></textarea></div>
@@ -187,22 +220,37 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 
 <!-- ═══ 總覽 ════════════════════════════════════════════ -->
 <div id="pg-overview" class="pg">
+  <!-- 三個餘額 -->
+  <div class="bal-grid">
+    <div class="bal-card" style="background:rgba(0,191,165,.08);border-color:rgba(0,191,165,.25)">
+      <div class="bl c-acc">帳　戶</div>
+      <div class="bv c-acc" id="bal-account">NT$0</div>
+    </div>
+    <div class="bal-card" style="background:rgba(255,183,77,.08);border-color:rgba(255,183,77,.25)">
+      <div class="bl c-org">錢　包</div>
+      <div class="bv c-org" id="bal-wallet">NT$0</div>
+    </div>
+    <div class="bal-card" style="background:rgba(206,147,216,.08);border-color:rgba(206,147,216,.25)">
+      <div class="bl c-pur">存錢筒</div>
+      <div class="bv c-pur" id="bal-piggy">NT$0</div>
+    </div>
+  </div>
   <div class="month-nav">
     <button onclick="chMonth(-1)">&#8249;</button>
     <span id="ov-label"></span>
     <button onclick="chMonth(1)">&#8250;</button>
   </div>
   <div class="stat-grid">
-    <div class="stat-card"><div class="sl">收入</div><div class="sv c-grn" id="ov-in">NT$0</div></div>
-    <div class="stat-card"><div class="sl">支出</div><div class="sv c-red" id="ov-out">NT$0</div></div>
-    <div class="stat-card"><div class="sl">淨額</div><div class="sv" id="ov-net">NT$0</div></div>
+    <div class="stat-card"><div class="sl">本月收入</div><div class="sv c-grn" id="ov-in">NT$0</div></div>
+    <div class="stat-card"><div class="sl">現金支出</div><div class="sv c-red" id="ov-out">NT$0</div></div>
+    <div class="stat-card"><div class="sl">刷卡消費</div><div class="sv c-org" id="ov-cr">NT$0</div></div>
   </div>
   <div class="card">
-    <div class="card-title">支出分類</div>
+    <div class="card-title">現金支出分類</div>
     <div class="chart-wrap" id="pie-wrap"><canvas id="pie-chart"></canvas></div>
   </div>
   <div class="card">
-    <div class="card-title">每日支出</div>
+    <div class="card-title">每日現金支出</div>
     <div class="chart-wrap" id="bar-wrap"><canvas id="bar-chart"></canvas></div>
   </div>
   <div class="card">
@@ -222,7 +270,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   <div id="cr-empty" class="empty" style="display:none">尚未新增信用卡<br>請前往設定頁面新增</div>
   <div id="cr-main" style="display:none">
     <div class="card-tabs" id="cr-tabs"></div>
-
     <!-- 全部卡片總覽 -->
     <div id="cr-all-view" style="display:none">
       <div class="card">
@@ -238,8 +285,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
         <div id="cr-all-schedule"></div>
       </div>
     </div>
-
-    <!-- 單張卡片檢視 -->
+    <!-- 單張卡片 -->
     <div id="cr-card-view">
       <div class="card">
         <div class="card-title">篩選期間</div>
@@ -249,22 +295,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
         </div>
         <button class="btn btn-ghost btn-sm" onclick="renderCreditCard()">套用</button>
       </div>
-      <div class="card">
-        <div class="card-title">本期帳單</div>
-        <div id="cr-billing"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">消費明細</div>
-        <div id="cr-detail"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">分期追蹤</div>
-        <div id="cr-inst"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">每月應繳摘要</div>
-        <div id="cr-monthly"></div>
-      </div>
+      <div class="card"><div class="card-title">本期帳單</div><div id="cr-billing"></div></div>
+      <div class="card"><div class="card-title">消費明細</div><div id="cr-detail"></div></div>
+      <div class="card"><div class="card-title">分期追蹤</div><div id="cr-inst"></div></div>
+      <div class="card"><div class="card-title">每月應繳摘要</div><div id="cr-monthly"></div></div>
       <button class="btn btn-ghost" style="margin-bottom:12px" onclick="exportExcel()">📊 匯出 Excel</button>
     </div>
   </div>
@@ -313,7 +347,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   </div>
 </div>
 
-<!-- ═══ 底部導覽 ══════════════════════════════════════════ -->
+<!-- ═══ 底部導覽 ═══════════════════════════════════════ -->
 <nav class="nav">
   <button class="nav-btn on" onclick="goTab('entry',this)"><span class="ic">📝</span>記帳</button>
   <button class="nav-btn" onclick="goTab('overview',this)"><span class="ic">📊</span>總覽</button>
@@ -323,19 +357,18 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 
 <script>
 'use strict';
-// ── Constants ──────────────────────────────────────────────────────────
-const DEF_CATS = ['餐飲','交通','購物','娛樂','醫療','居家','其他','薪資','獎金'];
-const CAT_COLORS = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FF6B6B','#45B7D1','#96CEB4','#FFEAA7'];
+const DEF_CATS=['餐飲','交通','購物','娛樂','醫療','居家','其他','薪資','獎金'];
+const CAT_COLORS=['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FF6B6B','#45B7D1','#96CEB4','#FFEAA7'];
+const BUCKET_LABEL={account:'帳戶',wallet:'錢包',piggy:'存錢筒'};
 
-// ── State ──────────────────────────────────────────────────────────────
-let D = { cards:[], categories:[...DEF_CATS], records:[] };
-let CFG = { apiKey:'', binId:'' };
-let entryType = 'expense';
-let payMethod = 'cash';
-let isInstall = false;
-let ovYm = ymStr(new Date());
-let crCardIdx = -1;
-let pieChart = null, barChart = null;
+let D={cards:[],categories:[...DEF_CATS],records:[]};
+let CFG={apiKey:'',binId:''};
+let entryMode='income';
+let isInstall=false;
+let ovYm=ymStr(new Date());
+let crCardIdx=-1;
+let pieChart=null, barChart=null;
+let editId=null, editMode='income';
 
 // ── Utils ──────────────────────────────────────────────────────────────
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -345,31 +378,54 @@ function ymLabel(ym){ const[y,m]=ym.split('-'); return y+'年'+parseInt(m)+'月'
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function addMonths(ym,n){ const[y,m]=ym.split('-').map(Number); const d=new Date(y,m-1+n,1); return ymStr(d); }
 function monthDiff(a,b){ const[ay,am]=a.split('-').map(Number); const[by,bm]=b.split('-').map(Number); return (by-ay)*12+(bm-am); }
-
 function tip(msg,ok=true){
   const t=document.getElementById('toast');
   t.textContent=msg; t.style.background=ok?'var(--acc)':'var(--red)';
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
 }
 function loading(v){ document.getElementById('loading').style.display=v?'flex':'none'; }
-
-// Given transaction date string + billing day, return which billing month (ym) it belongs to
-function billYmFor(dateStr, billDay){
+function billYmFor(dateStr,billDay){
   const d=new Date(dateStr);
   if(d.getDate()<=billDay) return ymStr(d);
   return addMonths(ymStr(d),1);
 }
-// Get billing period date range for a billing month ym
-function billPeriod(ym, billDay){
+function billPeriod(ym,billDay){
   const[y,m]=ym.split('-').map(Number);
   const end=new Date(y,m-1,billDay);
   const start=new Date(y,m-2,billDay+1);
-  return { start, end, ss:start.toISOString().slice(0,10), es:end.toISOString().slice(0,10) };
+  return{start,end,ss:start.toISOString().slice(0,10),es:end.toISOString().slice(0,10)};
+}
+
+// ── Migration: normalize old-format records ──────────────────────────────
+function migrateRecord(r){
+  if(r.type==='transfer'||r.type==='income'||r.type==='cash'||r.type==='credit') return r;
+  if(r.type==='expense'){
+    if(r.paymentMethod==='credit'||r.cardId) return {...r,type:'credit'};
+    return {...r,type:'cash',from:'wallet'};
+  }
+  return r;
+}
+function migrateAll(){ D.records=D.records.map(migrateRecord); }
+
+// ── Balance calculation ─────────────────────────────────────────────────
+function getBalances(){
+  let account=0,wallet=0,piggy=0;
+  D.records.forEach(r=>{
+    const amt=r.amount||0;
+    if(r.type==='income') account+=amt;
+    else if(r.type==='cash') wallet-=amt;
+    else if(r.type==='transfer'){
+      const f=r.from||'account', t=r.to||'wallet';
+      if(f==='account') account-=amt; else if(f==='wallet') wallet-=amt; else piggy-=amt;
+      if(t==='account') account+=amt; else if(t==='wallet') wallet+=amt; else piggy+=amt;
+    }
+  });
+  return{account,wallet,piggy};
 }
 
 // ── Storage ────────────────────────────────────────────────────────────
 function localSave(){ try{ localStorage.setItem('acct_d',JSON.stringify(D)); }catch(e){} }
-function localLoad(){ const s=localStorage.getItem('acct_d'); if(s) try{ D={...D,...JSON.parse(s)}; }catch(e){} }
+function localLoad(){ const s=localStorage.getItem('acct_d'); if(s) try{ D={...D,...JSON.parse(s)}; migrateAll(); }catch(e){} }
 function cfgSave(){ localStorage.setItem('acct_c',JSON.stringify(CFG)); }
 function cfgLoad(){ const s=localStorage.getItem('acct_c'); if(s) try{ CFG={...CFG,...JSON.parse(s)}; }catch(e){} }
 
@@ -383,6 +439,7 @@ async function loadData(showTip){
     const j=await r.json();
     D={cards:[],categories:[...DEF_CATS],records:[],...j.record};
     if(!D.categories.length) D.categories=[...DEF_CATS];
+    migrateAll();
     localSave();
     if(showTip) tip(`✓ 已同步：${D.cards.length}張卡，${D.records.length}筆紀錄`);
   }catch(e){ localLoad(); tip('⚠ 雲端載入失敗，使用本機快取',false); console.warn('JSONBin load:',e.message); }
@@ -393,7 +450,7 @@ async function saveData(){
   if(!CFG.apiKey||!CFG.binId) return;
   try{
     const r=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}`,{
-      method:'PUT', headers:{'X-Master-Key':CFG.apiKey,'Content-Type':'application/json'}, body:JSON.stringify(D)
+      method:'PUT',headers:{'X-Master-Key':CFG.apiKey,'Content-Type':'application/json'},body:JSON.stringify(D)
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
   }catch(e){ tip('雲端儲存失敗，已存本機',false); }
@@ -410,8 +467,7 @@ async function createBin(){
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j=await r.json();
-    CFG.binId=j.metadata.id;
-    cfgSave();
+    CFG.binId=j.metadata.id; cfgSave();
     document.getElementById('s-bin').value=CFG.binId;
     tip('✓ 已建立 Bin：'+CFG.binId);
   }catch(e){ tip('建立失敗：'+e.message,false); }
@@ -425,16 +481,13 @@ async function testConn(){
   try{
     const r=await fetch(`https://api.jsonbin.io/v3/b/${bid}/latest`,{headers:{'X-Master-Key':key}});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    const j=await r.json();
-    const rec=j.record||{};
-    const cards=(rec.cards||[]).length;
-    const records=(rec.records||[]).length;
-    tip(`✓ 連線成功｜${cards}張卡，${records}筆紀錄`);
+    const j=await r.json(); const rec=j.record||{};
+    tip(`✓ 連線成功｜${(rec.cards||[]).length}張卡，${(rec.records||[]).length}筆紀錄`);
   }catch(e){ tip('連線失敗：'+e.message,false); }
   loading(false);
 }
 
-// ── Navigation ──────────────────────────────────────────────────────────
+// ── Navigation ─────────────────────────────────────────────────────────
 function goTab(tab,el){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
@@ -445,18 +498,17 @@ function goTab(tab,el){
   if(tab==='settings') renderSettings();
 }
 
-// ── Entry Page ──────────────────────────────────────────────────────────
-function setType(t,el){
-  entryType=t;
-  document.querySelectorAll('#type-toggle .toggle-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
+// ── Entry Page ─────────────────────────────────────────────────────────
+function setMode(m){
+  entryMode=m;
+  ['income','cash','credit','transfer'].forEach(x=>{
+    document.getElementById('m-'+x).classList.toggle('on',x===m);
+  });
+  document.getElementById('e-cat-row').style.display=m==='transfer'?'none':'block';
+  document.getElementById('e-credit-sec').style.display=m==='credit'?'block':'none';
+  document.getElementById('e-transfer-sec').style.display=m==='transfer'?'block':'none';
+  if(m!=='credit'){ isInstall=false; document.getElementById('inst-section').style.display='none'; }
   rebuildCatSelect();
-}
-function setPayment(m){
-  payMethod=m;
-  document.getElementById('pay-cash').classList.toggle('on',m==='cash');
-  document.getElementById('pay-credit').classList.toggle('on',m==='credit');
-  document.getElementById('credit-section').style.display=m==='credit'?'block':'none';
 }
 function setInstall(v){
   isInstall=v;
@@ -465,8 +517,7 @@ function setInstall(v){
   document.getElementById('inst-section').style.display=v?'block':'none';
 }
 function rebuildCatSelect(){
-  const sel=document.getElementById('e-cat');
-  sel.innerHTML=D.categories.map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('e-cat').innerHTML=D.categories.map(c=>`<option>${c}</option>`).join('');
 }
 function rebuildCardSelect(){
   const sel=document.getElementById('e-card');
@@ -474,53 +525,98 @@ function rebuildCardSelect(){
   sel.innerHTML=D.cards.map(c=>`<option value="${c.id}">${c.name}（${c.billingDate}號）</option>`).join('');
 }
 function renderRecent(){
-  const sorted=[...D.records].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,10);
+  const sorted=[...D.records].sort((a,b)=>b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id))).slice(0,10);
   const el=document.getElementById('recent-list');
   if(!sorted.length){ el.innerHTML='<div class="empty">尚無記錄</div>'; return; }
   el.innerHTML=sorted.map(r=>recHtml(r)).join('');
 }
+
 function recHtml(r){
-  const inc=r.type==='income';
-  const badgeTxt=r.paymentMethod==='credit'?(r.installment?`分${r.installmentTotal}期`:'刷卡'):'現金';
-  const badgeColor=r.paymentMethod==='credit'?(r.installment?'rgba(255,183,77,.25)':'rgba(0,191,165,.2)'):'rgba(158,158,158,.2)';
-  const badgeTColor=r.paymentMethod==='credit'?(r.installment?'var(--org)':'var(--acc)'):'var(--tx2)';
-  const cardName=r.cardId?(D.cards.find(c=>c.id===r.cardId)?.name||''):'';
-  return `<div class="ri">
-    <div style="flex:1;min-width:0">
-      <div class="ri-cat">${r.category}
-        <span class="badge" style="background:${badgeColor};color:${badgeTColor}">${badgeTxt}</span>
+  const actions=`<div class="rec-actions"><button class="btn-edit-rec" onclick="openEdit('${r.id}')">✏ 編輯</button><button class="btn-del-rec" onclick="delRec('${r.id}')">🗑 刪除</button></div>`;
+  if(r.type==='income'){
+    return `<div class="ri">
+      <div style="flex:1;min-width:0">
+        <div class="ri-cat">${r.category||'收入'}<span class="badge" style="background:rgba(105,240,174,.15);color:var(--grn)">→帳戶</span></div>
+        <div class="ri-sub">${r.date}${r.note?' · '+r.note:''}</div>
       </div>
-      <div class="ri-sub">${r.date}${cardName?' · '+cardName:''}${r.note?' · '+r.note:''}</div>
-    </div>
-    <div class="ri-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-      <div class="ri-amt ${inc?'c-grn':'c-red'}">${inc?'+':'-'}${nt(r.amount)}</div>
-      <div class="rec-actions">
-        <button class="btn-edit-rec" onclick="openEdit('${r.id}')">✏ 編輯</button>
-        <button class="btn-del-rec" onclick="delRec('${r.id}')">🗑 刪除</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="ri-amt c-grn">+${nt(r.amount)}</div>${actions}
       </div>
-    </div>
-  </div>`;
+    </div>`;
+  }
+  if(r.type==='cash'){
+    return `<div class="ri">
+      <div style="flex:1;min-width:0">
+        <div class="ri-cat">${r.category||'支出'}<span class="badge" style="background:rgba(255,183,77,.15);color:var(--org)">現金</span></div>
+        <div class="ri-sub">${r.date}${r.note?' · '+r.note:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="ri-amt c-red">-${nt(r.amount)}</div>${actions}
+      </div>
+    </div>`;
+  }
+  if(r.type==='credit'){
+    const cardName=r.cardId?(D.cards.find(c=>c.id===r.cardId)?.name||''):'';
+    const badgeTxt=r.installment?`分${r.installmentTotal}期`:'刷卡';
+    const badgeColor=r.installment?'rgba(255,183,77,.2)':'rgba(0,191,165,.15)';
+    const badgeTColor=r.installment?'var(--org)':'var(--acc)';
+    return `<div class="ri">
+      <div style="flex:1;min-width:0">
+        <div class="ri-cat">${r.category||'消費'}<span class="badge" style="background:${badgeColor};color:${badgeTColor}">${badgeTxt}</span></div>
+        <div class="ri-sub">${r.date}${cardName?' · '+cardName:''}${r.note?' · '+r.note:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="ri-amt c-red">-${nt(r.amount)}</div>${actions}
+      </div>
+    </div>`;
+  }
+  if(r.type==='transfer'){
+    const fl=BUCKET_LABEL[r.from]||r.from, tl=BUCKET_LABEL[r.to]||r.to;
+    return `<div class="ri">
+      <div style="flex:1;min-width:0">
+        <div class="ri-cat" style="color:var(--purple)">${fl} → ${tl}</div>
+        <div class="ri-sub">${r.date}${r.note?' · '+r.note:''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="ri-amt c-pur">${nt(r.amount)}</div>${actions}
+      </div>
+    </div>`;
+  }
+  return '';
 }
+
 async function saveRecord(){
   const date=document.getElementById('e-date').value;
   const amt=parseFloat(document.getElementById('e-amt').value);
-  const cat=document.getElementById('e-cat').value;
-  const note=document.getElementById('e-note').value.trim();
   if(!date){ tip('請選擇日期',false); return; }
   if(!amt||amt<=0){ tip('請輸入有效金額',false); return; }
-  const rec={id:uid(),date,type:entryType,amount:amt,category:cat,
-    paymentMethod:payMethod,cardId:'',note,installment:false,installmentTotal:0};
-  if(payMethod==='credit'){
+  const cat=document.getElementById('e-cat').value;
+  const note=document.getElementById('e-note').value.trim();
+  let rec={id:uid(),date,amount:amt,note,type:entryMode};
+
+  if(entryMode==='income'||entryMode==='cash'){
+    rec.category=cat;
+    if(entryMode==='income') rec.to='account';
+    else rec.from='wallet';
+  } else if(entryMode==='credit'){
+    rec.category=cat;
     const cardSel=document.getElementById('e-card');
     if(!cardSel.value){ tip('請選擇信用卡',false); return; }
     rec.cardId=cardSel.value;
     rec.installment=isInstall;
+    rec.installmentTotal=0;
     if(isInstall){
       const n=parseInt(document.getElementById('e-inst').value);
       if(!n||n<2){ tip('分期期數至少 2 期',false); return; }
       rec.installmentTotal=n;
     }
+  } else if(entryMode==='transfer'){
+    const from=document.getElementById('e-from').value;
+    const to=document.getElementById('e-to').value;
+    if(from===to){ tip('轉出和轉入不能相同',false); return; }
+    rec.from=from; rec.to=to;
   }
+
   D.records.push(rec);
   loading(true); await saveData(); loading(false);
   tip('✓ 已儲存');
@@ -528,7 +624,9 @@ async function saveRecord(){
   document.getElementById('e-note').value='';
   document.getElementById('e-date').value=todayStr();
   renderRecent();
+  updateBalanceCards();
 }
+
 async function delRec(id){
   if(!confirm('確定刪除此筆記錄？')) return;
   D.records=D.records.filter(r=>r.id!==id);
@@ -537,35 +635,34 @@ async function delRec(id){
   refreshCurrentView();
 }
 
-let editId=null, editPayMethod='cash';
-function setEditType(t,el){
-  document.querySelectorAll('#edit-type-toggle .toggle-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-}
-function setEditPayment(m){
-  editPayMethod=m;
-  document.getElementById('ed-pay-cash').classList.toggle('on',m==='cash');
-  document.getElementById('ed-pay-credit').classList.toggle('on',m==='credit');
-  document.getElementById('ed-credit-section').style.display=m==='credit'?'block':'none';
+// ── Edit Modal ─────────────────────────────────────────────────────────
+function setEditMode(m){
+  editMode=m;
+  ['income','cash','credit','transfer'].forEach(x=>{
+    document.getElementById('edm-'+x).classList.toggle('on',x===m);
+  });
+  document.getElementById('ed-cat-row').style.display=m==='transfer'?'none':'block';
+  document.getElementById('ed-credit-sec').style.display=m==='credit'?'block':'none';
+  document.getElementById('ed-transfer-sec').style.display=m==='transfer'?'block':'none';
 }
 function openEdit(id){
   const r=D.records.find(r=>r.id===id); if(!r) return;
   editId=id;
-  // fill type
-  document.querySelectorAll('#edit-type-toggle .toggle-btn').forEach((b,i)=>{
-    b.classList.toggle('on',(i===0&&r.type==='expense')||(i===1&&r.type==='income'));
-  });
+  const m=r.type||'cash';
+  editMode=m;
+  setEditMode(m);
   document.getElementById('ed-date').value=r.date;
   document.getElementById('ed-amt').value=r.amount;
-  // fill categories
   const catSel=document.getElementById('ed-cat');
   catSel.innerHTML=D.categories.map(c=>`<option value="${c}"${c===r.category?' selected':''}>${c}</option>`).join('');
-  // fill payment
-  editPayMethod=r.paymentMethod||'cash';
-  setEditPayment(editPayMethod);
-  // fill cards
-  const cardSel=document.getElementById('ed-card');
-  cardSel.innerHTML=D.cards.map(c=>`<option value="${c.id}"${c.id===r.cardId?' selected':''}>${c.name}</option>`).join('');
+  if(m==='credit'){
+    const cardSel=document.getElementById('ed-card');
+    cardSel.innerHTML=D.cards.map(c=>`<option value="${c.id}"${c.id===r.cardId?' selected':''}>${c.name}</option>`).join('');
+  }
+  if(m==='transfer'){
+    document.getElementById('ed-from').value=r.from||'account';
+    document.getElementById('ed-to').value=r.to||'wallet';
+  }
   document.getElementById('ed-note').value=r.note||'';
   document.getElementById('edit-modal').style.display='flex';
 }
@@ -576,70 +673,78 @@ function closeEdit(){
 async function saveEdit(){
   if(!editId) return;
   const idx=D.records.findIndex(r=>r.id===editId); if(idx<0) return;
-  const typeBtn=document.querySelector('#edit-type-toggle .toggle-btn.on');
-  const type=typeBtn?.textContent==='收入'?'income':'expense';
   const date=document.getElementById('ed-date').value;
   const amt=parseFloat(document.getElementById('ed-amt').value);
-  const cat=document.getElementById('ed-cat').value;
-  const note=document.getElementById('ed-note').value.trim();
   if(!date||!amt||amt<=0){ tip('請填寫日期和金額',false); return; }
-  const updated={...D.records[idx],type,date,amount:amt,category:cat,note,paymentMethod:editPayMethod};
-  if(editPayMethod==='credit'){
-    const cardSel=document.getElementById('ed-card');
-    updated.cardId=cardSel.value||'';
-  } else { updated.cardId=''; updated.installment=false; updated.installmentTotal=0; }
+  const note=document.getElementById('ed-note').value.trim();
+  let updated={...D.records[idx],date,amount:amt,note,type:editMode};
+  if(editMode==='income'||editMode==='cash'){
+    updated.category=document.getElementById('ed-cat').value;
+    if(editMode==='income') updated.to='account';
+    else updated.from='wallet';
+  } else if(editMode==='credit'){
+    updated.category=document.getElementById('ed-cat').value;
+    updated.cardId=document.getElementById('ed-card').value||'';
+  } else if(editMode==='transfer'){
+    const from=document.getElementById('ed-from').value;
+    const to=document.getElementById('ed-to').value;
+    if(from===to){ tip('轉出和轉入不能相同',false); return; }
+    updated.from=from; updated.to=to;
+  }
   D.records[idx]=updated;
   loading(true); await saveData(); loading(false);
-  tip('✓ 已更新');
-  closeEdit();
-  refreshCurrentView();
+  tip('✓ 已更新'); closeEdit(); refreshCurrentView();
 }
 async function delRecFromEdit(){
   if(!editId) return;
   if(!confirm('確定刪除此筆記錄？')) return;
   D.records=D.records.filter(r=>r.id!==editId);
   loading(true); await saveData(); loading(false);
-  tip('已刪除');
-  closeEdit();
-  refreshCurrentView();
+  tip('已刪除'); closeEdit(); refreshCurrentView();
 }
 function refreshCurrentView(){
+  updateBalanceCards();
   const datePick=document.getElementById('ov-date-pick').value;
   if(document.getElementById('pg-overview').classList.contains('on')){
     const recs=D.records.filter(r=>r.date.slice(0,7)===ovYm);
     drawPie(recs); drawBar(recs);
-    if(datePick) renderDayList(datePick);
-    else clearDateFilter();
+    if(datePick) renderDayList(datePick); else clearDateFilter();
   }
   renderRecent();
 }
 
 // ── Overview Page ──────────────────────────────────────────────────────
+function updateBalanceCards(){
+  const b=getBalances();
+  document.getElementById('bal-account').textContent=nt(b.account);
+  document.getElementById('bal-wallet').textContent=nt(b.wallet);
+  document.getElementById('bal-piggy').textContent=nt(b.piggy);
+}
 function chMonth(d){ const[y,m]=ovYm.split('-').map(Number); const nd=new Date(y,m-1+d,1); ovYm=ymStr(nd); renderOverview(); }
 function renderOverview(){
+  updateBalanceCards();
   document.getElementById('ov-label').textContent=ymLabel(ovYm);
   const recs=D.records.filter(r=>r.date.slice(0,7)===ovYm);
   const inc=recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
-  const exp=recs.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
-  const net=inc-exp;
+  const cash=recs.filter(r=>r.type==='cash').reduce((s,r)=>s+r.amount,0);
+  const cr=recs.filter(r=>r.type==='credit').reduce((s,r)=>s+r.amount,0);
   document.getElementById('ov-in').textContent=nt(inc);
-  document.getElementById('ov-out').textContent=nt(exp);
-  document.getElementById('ov-net').textContent=(net>=0?'+':'-')+nt(net);
-  document.getElementById('ov-net').className='sv '+(net>=0?'c-grn':'c-red');
+  document.getElementById('ov-out').textContent=nt(cash);
+  document.getElementById('ov-cr').textContent=nt(cr);
   drawPie(recs); drawBar(recs);
   clearDateFilter();
 }
 function renderDayList(dateStr){
-  const recs=D.records.filter(r=>r.date===dateStr).sort((a,b)=>b.id-a.id);
-  const [y,m,d]=dateStr.split('-');
-  document.getElementById('ov-list-title').textContent=`${parseInt(m)}月${parseInt(d)}日 消費紀錄`;
+  const recs=D.records.filter(r=>r.date===dateStr).sort((a,b)=>String(b.id).localeCompare(String(a.id)));
+  const[,m,d]=dateStr.split('-');
+  document.getElementById('ov-list-title').textContent=`${parseInt(m)}月${parseInt(d)}日 紀錄`;
   document.getElementById('ov-date-clear').style.display='';
   document.getElementById('ov-date-pick').value=dateStr;
   const el=document.getElementById('ov-list');
   if(!recs.length){ el.innerHTML='<div class="empty">當日無記錄</div>'; return; }
-  const total=recs.filter(r=>r.type==='expense').reduce((s,r)=>s+r.amount,0);
+  const total=recs.filter(r=>r.type==='cash').reduce((s,r)=>s+r.amount,0);
   el.innerHTML=recs.map(r=>recHtml(r)).join('')+
-    `<div style="text-align:right;padding:8px 0;font-size:13px;color:var(--tx2)">當日支出合計：<span style="color:var(--red);font-weight:700">${nt(total)}</span></div>`;
+    (total?`<div style="text-align:right;padding:8px 0;font-size:13px;color:var(--tx2)">當日現金支出：<span style="color:var(--red);font-weight:700">${nt(total)}</span></div>`:'');
 }
 function filterByDate(val){
   if(!val){ clearDateFilter(); return; }
@@ -653,22 +758,20 @@ function clearDateFilter(){
   document.getElementById('ov-list-title').textContent='當月紀錄';
   document.getElementById('ov-date-clear').style.display='none';
   document.getElementById('ov-date-pick').value='';
-  const recs=D.records.filter(r=>r.date.slice(0,7)===ovYm).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const recs=D.records.filter(r=>r.date.slice(0,7)===ovYm).sort((a,b)=>b.date.localeCompare(a.date)||String(b.id).localeCompare(String(a.id)));
   const el=document.getElementById('ov-list');
   el.innerHTML=recs.length?recs.map(r=>recHtml(r)).join(''):'<div class="empty">本月無記錄</div>';
 }
 function drawPie(recs){
-  const exp=recs.filter(r=>r.type==='expense');
   const map={};
-  exp.forEach(r=>{ map[r.category]=(map[r.category]||0)+r.amount; });
+  recs.filter(r=>r.type==='cash').forEach(r=>{ map[r.category]=(map[r.category]||0)+r.amount; });
   const labels=Object.keys(map);
-  const vals=labels.map(l=>map[l]);
   const wrap=document.getElementById('pie-wrap');
   wrap.innerHTML='<canvas id="pie-chart"></canvas>';
-  if(!labels.length){ wrap.innerHTML='<div class="empty" style="height:210px;display:flex;align-items:center;justify-content:center">本月無支出</div>'; return; }
+  if(!labels.length){ wrap.innerHTML='<div class="empty" style="height:210px;display:flex;align-items:center;justify-content:center">本月無現金支出</div>'; return; }
   pieChart=new Chart(document.getElementById('pie-chart'),{
     type:'doughnut',
-    data:{labels,datasets:[{data:vals,backgroundColor:CAT_COLORS.slice(0,labels.length),borderWidth:0,hoverOffset:6}]},
+    data:{labels,datasets:[{data:labels.map(l=>map[l]),backgroundColor:CAT_COLORS.slice(0,labels.length),borderWidth:0,hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
       plugins:{legend:{position:'bottom',labels:{color:'#9e9e9e',font:{size:11},padding:8,boxWidth:12}}}}
   });
@@ -677,14 +780,13 @@ function drawBar(recs){
   const[y,m]=ovYm.split('-').map(Number);
   const days=new Date(y,m,0).getDate();
   const daily={};
-  recs.filter(r=>r.type==='expense').forEach(r=>{ const d=parseInt(r.date.slice(8)); daily[d]=(daily[d]||0)+r.amount; });
+  recs.filter(r=>r.type==='cash').forEach(r=>{ const d=parseInt(r.date.slice(8)); daily[d]=(daily[d]||0)+r.amount; });
   const labels=Array.from({length:days},(_,i)=>i+1);
-  const vals=labels.map(d=>daily[d]||0);
   const wrap=document.getElementById('bar-wrap');
   wrap.innerHTML='<canvas id="bar-chart"></canvas>';
   barChart=new Chart(document.getElementById('bar-chart'),{
     type:'bar',
-    data:{labels,datasets:[{label:'支出',data:vals,backgroundColor:'rgba(0,191,165,.55)',borderRadius:3}]},
+    data:{labels,datasets:[{label:'現金支出',data:labels.map(d=>daily[d]||0),backgroundColor:'rgba(0,191,165,.55)',borderRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{callbacks:{title:([i])=>`${parseInt(ovYm.split('-')[1])}月${i.label}日`,label:c=>'NT$'+c.raw.toLocaleString()}}},
       scales:{x:{ticks:{color:'#9e9e9e',font:{size:9},maxRotation:0},grid:{display:false}},
@@ -701,6 +803,8 @@ function drawBar(recs){
 }
 
 // ── Credit Card Page ────────────────────────────────────────────────────
+function isCreditRec(r,cardId){ return (r.type==='credit'||(r.type==='expense'&&(r.paymentMethod==='credit'||r.cardId)))&&r.cardId===cardId; }
+
 function renderCreditPage(){
   if(!D.cards.length){
     document.getElementById('cr-empty').style.display='block';
@@ -708,39 +812,35 @@ function renderCreditPage(){
   }
   document.getElementById('cr-empty').style.display='none';
   document.getElementById('cr-main').style.display='block';
-  // Build tabs: 全部 + each card
   const allTab=`<div class="ctab ${crCardIdx===-1?'on':''}" onclick="selCard(-1)">全部</div>`;
   document.getElementById('cr-tabs').innerHTML=allTab+D.cards.map((c,i)=>
     `<div class="ctab ${i===crCardIdx?'on':''}" onclick="selCard(${i})">${c.name}</div>`).join('');
-  // Default range
   if(!document.getElementById('cr-from').value){
     document.getElementById('cr-from').value=addMonths(ymStr(new Date()),-2);
     document.getElementById('cr-to').value=ymStr(new Date());
   }
-  if(crCardIdx===-1) renderAllCards();
-  else renderCreditCard();
+  document.getElementById('cr-all-view').style.display=crCardIdx===-1?'block':'none';
+  document.getElementById('cr-card-view').style.display=crCardIdx===-1?'none':'block';
+  if(crCardIdx===-1) renderAllCards(); else renderCreditCard();
 }
 function selCard(i){
   crCardIdx=i;
   document.querySelectorAll('.ctab').forEach((t,j)=>t.classList.toggle('on',j===i+1));
   document.getElementById('cr-all-view').style.display=i===-1?'block':'none';
   document.getElementById('cr-card-view').style.display=i===-1?'none':'block';
-  if(i===-1) renderAllCards();
-  else renderCreditCard();
+  if(i===-1) renderAllCards(); else renderCreditCard();
 }
 function renderAllCards(){
   const nowYm=ymStr(new Date());
-  // ── 本期各卡應繳 ──
   let billingRows='', grandTotal=0;
   D.cards.forEach(card=>{
-    const allCard=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id);
+    const allCard=D.records.filter(r=>isCreditRec(r,card.id));
     const now=new Date();
     const billingYm=now.getDate()<=card.billingDate?nowYm:addMonths(nowYm,1);
     const p=billPeriod(billingYm,card.billingDate);
     const lump=allCard.filter(r=>!r.installment&&r.date>=p.ss&&r.date<=p.es).reduce((s,r)=>s+r.amount,0);
     const inst=instPaymentsForYm(allCard.filter(r=>r.installment),card,billingYm).reduce((s,x)=>s+x.amt,0);
-    const total=lump+inst;
-    grandTotal+=total;
+    const total=lump+inst; grandTotal+=total;
     billingRows+=`<tr>
       <td><div style="font-weight:500">${card.name}</div><div style="font-size:11px;color:var(--tx2)">${p.ss}～${p.es}</div></td>
       <td class="c-org">${lump?nt(lump):'-'}</td>
@@ -749,24 +849,18 @@ function renderAllCards(){
     </tr>`;
   });
   document.getElementById('cr-all-billing').innerHTML=`
-    <table class="stbl">
-      <thead><tr><th>信用卡</th><th>付清</th><th>分期款</th><th>應繳</th></tr></thead>
-      <tbody>${billingRows}</tbody>
-    </table>
+    <table class="stbl"><thead><tr><th>信用卡</th><th>付清</th><th>分期款</th><th>應繳</th></tr></thead>
+    <tbody>${billingRows}</tbody></table>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;border-top:1px solid var(--bdr);margin-top:4px">
       <span style="font-weight:700">本期總應繳</span>
       <span style="font-size:20px;font-weight:800;color:var(--acc)">${nt(grandTotal)}</span>
     </div>`;
-
-  // ── 未結清分期（所有卡）──
   const allInst=[];
   D.cards.forEach(card=>{
-    const instRecs=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id&&r.installment&&r.installmentTotal>0);
-    instRecs.forEach(r=>{
+    D.records.filter(r=>isCreditRec(r,card.id)&&r.installment&&r.installmentTotal>0).forEach(r=>{
       const startYm=billYmFor(r.date,card.billingDate);
       const paid=Math.min(Math.max(0,monthDiff(startYm,nowYm)+1),r.installmentTotal);
-      const remain=r.installmentTotal-paid;
-      allInst.push({r,card,startYm,paid,remain,monthly:Math.round(r.amount/r.installmentTotal)});
+      allInst.push({r,card,paid,remain:r.installmentTotal-paid,monthly:Math.round(r.amount/r.installmentTotal)});
     });
   });
   allInst.sort((a,b)=>b.remain-a.remain);
@@ -774,8 +868,7 @@ function renderAllCards(){
   if(!allInst.length){ instEl.innerHTML='<div class="empty">目前無未結清分期</div>'; }
   else{
     instEl.innerHTML=allInst.map(({r,card,paid,remain,monthly})=>{
-      const done=remain===0;
-      const pct=Math.round(paid/r.installmentTotal*100);
+      const done=remain===0; const pct=Math.round(paid/r.installmentTotal*100);
       return `<div style="padding:12px 0;border-bottom:1px solid var(--bdr)">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
           <div>
@@ -796,54 +889,41 @@ function renderAllCards(){
       未結清分期餘額合計：<span style="color:var(--red);font-weight:700">${nt(allInst.filter(x=>x.remain>0).reduce((s,x)=>s+x.remain*x.monthly,0))}</span>
     </div>`;
   }
-
-  // ── 未來 12 個月分期規劃 ──
   const scheduleRows=[];
-  for(let m=0;m<12;m++){
-    const ym=addMonths(nowYm,m);
-    let total=0;
-    const breakdown=[];
+  for(let mo=0;mo<12;mo++){
+    const ym=addMonths(nowYm,mo); let total=0; const breakdown=[];
     D.cards.forEach(card=>{
-      const instRecs=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id&&r.installment);
-      const pays=instPaymentsForYm(instRecs,card,ym);
-      const amt=pays.reduce((s,x)=>s+x.amt,0);
+      const instRecs=D.records.filter(r=>isCreditRec(r,card.id)&&r.installment);
+      const amt=instPaymentsForYm(instRecs,card,ym).reduce((s,x)=>s+x.amt,0);
       if(amt>0) breakdown.push(`${card.name} ${nt(amt)}`);
       total+=amt;
     });
     scheduleRows.push({ym,total,breakdown});
   }
   document.getElementById('cr-all-schedule').innerHTML=`
-    <table class="stbl">
-      <thead><tr><th>月份</th><th>各卡明細</th><th>分期合計</th></tr></thead>
-      <tbody>${scheduleRows.map(row=>`
-        <tr style="${row.ym===nowYm?'background:rgba(0,191,165,.07)':''}">
-          <td style="white-space:nowrap">${ymLabel(row.ym)}${row.ym===nowYm?' <span style="font-size:10px;color:var(--acc)">▸本月</span>':''}</td>
-          <td style="font-size:12px;color:var(--tx2)">${row.breakdown.join('、')||'-'}</td>
-          <td style="font-weight:700;color:${row.total?'var(--acc)':'var(--tx2)'}">${row.total?nt(row.total):'-'}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
+    <table class="stbl"><thead><tr><th>月份</th><th>各卡明細</th><th>分期合計</th></tr></thead>
+    <tbody>${scheduleRows.map(row=>`
+      <tr style="${row.ym===nowYm?'background:rgba(0,191,165,.07)':''}">
+        <td style="white-space:nowrap">${ymLabel(row.ym)}${row.ym===nowYm?' <span style="font-size:10px;color:var(--acc)">▸本月</span>':''}</td>
+        <td style="font-size:12px;color:var(--tx2)">${row.breakdown.join('、')||'-'}</td>
+        <td style="font-weight:700;color:${row.total?'var(--acc)':'var(--tx2)'}">${row.total?nt(row.total):'-'}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
 }
 function renderCreditCard(){
   const card=D.cards[crCardIdx]; if(!card) return;
   const fromYm=document.getElementById('cr-from').value||addMonths(ymStr(new Date()),-2);
   const toYm=document.getElementById('cr-to').value||ymStr(new Date());
-  const allCard=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id);
+  const allCard=D.records.filter(r=>isCreditRec(r,card.id));
   const rangeRecs=allCard.filter(r=>r.date.slice(0,7)>=fromYm&&r.date.slice(0,7)<=toYm);
-  renderBilling(card,allCard);
-  renderCrDetail(rangeRecs);
-  renderInstTrack(allCard,card);
-  renderMonthly(card,allCard,fromYm,toYm);
+  renderBilling(card,allCard); renderCrDetail(rangeRecs); renderInstTrack(allCard,card); renderMonthly(card,allCard,fromYm,toYm);
 }
-
 function renderBilling(card,recs){
   const now=new Date(); const nowYm=ymStr(now);
   const billingYm=now.getDate()<=card.billingDate?nowYm:addMonths(nowYm,1);
   const p=billPeriod(billingYm,card.billingDate);
-  const lumpRecs=recs.filter(r=>!r.installment&&r.date>=p.ss&&r.date<=p.es);
-  const lump=lumpRecs.reduce((s,r)=>s+r.amount,0);
-  const instPay=instPaymentsForYm(recs.filter(r=>r.installment),card,billingYm);
-  const inst=instPay.reduce((s,x)=>s+x.amt,0);
+  const lump=recs.filter(r=>!r.installment&&r.date>=p.ss&&r.date<=p.es).reduce((s,r)=>s+r.amount,0);
+  const inst=instPaymentsForYm(recs.filter(r=>r.installment),card,billingYm).reduce((s,x)=>s+x.amt,0);
   document.getElementById('cr-billing').innerHTML=`
     <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">${p.ss} ～ ${p.es}（每月 ${card.billingDate} 號結帳）</div>
     <div class="ri"><span style="color:var(--tx2)">付清消費</span><span class="c-org">${nt(lump)}</span></div>
@@ -853,17 +933,14 @@ function renderBilling(card,recs){
       <span style="font-size:22px;font-weight:800;color:var(--acc)">${nt(lump+inst)}</span>
     </div>`;
 }
-
 function instPaymentsForYm(instRecs,card,targetYm){
   return instRecs.flatMap(r=>{
     const startYm=billYmFor(r.date,card.billingDate);
     const diff=monthDiff(startYm,targetYm);
-    if(diff>=0&&diff<r.installmentTotal)
-      return [{rec:r,no:diff+1,amt:Math.round(r.amount/r.installmentTotal)}];
+    if(diff>=0&&diff<r.installmentTotal) return [{rec:r,no:diff+1,amt:Math.round(r.amount/r.installmentTotal)}];
     return [];
   });
 }
-
 function renderCrDetail(recs){
   const sorted=[...recs].sort((a,b)=>b.date.localeCompare(a.date));
   const el=document.getElementById('cr-detail');
@@ -879,7 +956,6 @@ function renderCrDetail(recs){
       <div class="ri-amt c-red">-${nt(r.amount)}</div>
     </div>`).join('');
 }
-
 function renderInstTrack(recs,card){
   const inst=recs.filter(r=>r.installment&&r.installmentTotal>0);
   const el=document.getElementById('cr-inst');
@@ -907,18 +983,14 @@ function renderInstTrack(recs,card){
     </div>`;
   }).join('');
 }
-
 function renderMonthly(card,recs,fromYm,toYm){
-  const rows=[];
-  let cur=fromYm;
-  const limit=addMonths(toYm,4);
+  const rows=[]; let cur=fromYm; const limit=addMonths(toYm,4);
   while(cur<=limit){
     const lump=recs.filter(r=>!r.installment&&billYmFor(r.date,card.billingDate)===cur).reduce((s,r)=>s+r.amount,0);
     const inst=instPaymentsForYm(recs.filter(r=>r.installment),card,cur).reduce((s,x)=>s+x.amt,0);
     const total=lump+inst;
     if(total>0||cur<=toYm) rows.push({ym:cur,lump,inst,total});
-    cur=addMonths(cur,1);
-    if(rows.length>36) break;
+    cur=addMonths(cur,1); if(rows.length>36) break;
   }
   const nowYm=ymStr(new Date());
   const el=document.getElementById('cr-monthly');
@@ -940,18 +1012,14 @@ function exportExcel(){
   const card=D.cards[crCardIdx]; if(!card){ tip('請選擇信用卡',false); return; }
   const fromYm=document.getElementById('cr-from').value;
   const toYm=document.getElementById('cr-to').value;
-  const allCard=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id);
+  const allCard=D.records.filter(r=>isCreditRec(r,card.id));
   const rangeRecs=allCard.filter(r=>r.date.slice(0,7)>=fromYm&&r.date.slice(0,7)<=toYm);
   const instRecs=allCard.filter(r=>r.installment&&r.installmentTotal>0);
   const wb=XLSX.utils.book_new();
-
-  // Sheet 1: 消費明細
   const s1=[['日期','類別','備註','金額(NT$)','付款類型','分期期數']];
   [...rangeRecs].sort((a,b)=>b.date.localeCompare(a.date)).forEach(r=>
     s1.push([r.date,r.category,r.note||'',r.amount,r.installment?'分期':'付清',r.installment?r.installmentTotal:'']));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s1),'消費明細');
-
-  // Sheet 2: 分期追蹤表
   const maxN=instRecs.reduce((m,r)=>Math.max(m,r.installmentTotal),0);
   const s2hdr=['品項','類別','消費日','總金額','每期金額','期數','起始帳單月'];
   for(let i=1;i<=maxN;i++) s2hdr.push(`第${i}期`);
@@ -964,19 +1032,14 @@ function exportExcel(){
     s2.push(row);
   });
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s2),'分期追蹤表');
-
-  // Sheet 3: 每月帳單摘要
   const s3=[['帳單月份','付清消費','分期款','應繳合計']];
   let cur=fromYm; const lmt=addMonths(toYm,4); let cnt=0;
   while(cur<=lmt&&cnt<36){
     const lump=allCard.filter(r=>!r.installment&&billYmFor(r.date,card.billingDate)===cur).reduce((s,r)=>s+r.amount,0);
     const inst=instPaymentsForYm(instRecs,card,cur).reduce((s,x)=>s+x.amt,0);
-    s3.push([ymLabel(cur),lump,inst,lump+inst]);
-    cur=addMonths(cur,1); cnt++;
+    s3.push([ymLabel(cur),lump,inst,lump+inst]); cur=addMonths(cur,1); cnt++;
   }
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s3),'每月帳單摘要');
-
-  // Sheet 4: 分期未結清
   const nowYm=ymStr(new Date());
   const s4=[['品項','類別','總金額','每期金額','總期數','已繳期數','剩餘期數','剩餘金額']];
   instRecs.forEach(r=>{
@@ -989,7 +1052,6 @@ function exportExcel(){
     }
   });
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s4),'分期未結清');
-
   XLSX.writeFile(wb,`${card.name}_${fromYm}_${toYm}.xlsx`);
   tip('✓ Excel 已匯出');
 }
@@ -1003,33 +1065,28 @@ function renderSettings(){
 async function saveCfg(){
   CFG.apiKey=document.getElementById('s-key').value.trim();
   CFG.binId=document.getElementById('s-bin').value.trim();
-  cfgSave();
-  // Check if JSONBin bin is empty; if so, upload local data first
-  tip('✓ 設定已儲存，檢查雲端資料…');
+  cfgSave(); tip('✓ 設定已儲存，檢查雲端資料…');
   loading(true);
   try{
     const r=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}/latest`,{headers:{'X-Master-Key':CFG.apiKey}});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    const j=await r.json();
-    const remote=j.record||{};
+    const j=await r.json(); const remote=j.record||{};
     const remoteCount=(remote.records||[]).length+(remote.cards||[]).length;
     const localCount=D.records.length+D.cards.length;
-    if(remoteCount===0 && localCount>0){
-      // Remote is empty but local has data → upload local to remote
+    if(remoteCount===0&&localCount>0){
       tip('雲端無資料，上傳本機資料中…');
       await saveData();
       tip(`✓ 已上傳本機資料：${D.cards.length}張卡，${D.records.length}筆紀錄`);
     } else {
-      // Remote has data → load it
       D={cards:[],categories:[...DEF_CATS],records:[],...remote};
       if(!D.categories.length) D.categories=[...DEF_CATS];
-      localSave();
+      migrateAll(); localSave();
       tip(`✓ 已從雲端載入：${D.cards.length}張卡，${D.records.length}筆紀錄`);
     }
   }catch(e){ tip('⚠ 連線失敗：'+e.message,false); }
   loading(false);
-  rebuildCatSelect(); rebuildCardSelect(); renderRecent();
-  renderSettings();
+  rebuildCatSelect(); rebuildCardSelect(); renderRecent(); renderSettings();
+  updateBalanceCards();
 }
 async function addCard(){
   const name=document.getElementById('s-cname').value.trim();
@@ -1045,7 +1102,7 @@ async function addCard(){
 async function delCard(id){
   if(!confirm('確定刪除此信用卡？')) return;
   D.cards=D.cards.filter(c=>c.id!==id);
-  if(crCardIdx>=D.cards.length) crCardIdx=0;
+  if(crCardIdx>=D.cards.length) crCardIdx=-1;
   loading(true); await saveData(); loading(false);
   renderCardList(); rebuildCardSelect(); tip('已刪除');
 }
@@ -1080,6 +1137,7 @@ function renderCatList(){
 async function reloadAll(){
   await loadData(true);
   rebuildCatSelect(); rebuildCardSelect(); renderRecent(); renderCardList(); renderCatList();
+  updateBalanceCards();
 }
 function clearCache(){
   if(!confirm('確定清除本機快取？不影響 JSONBin 雲端資料。')) return;
@@ -1095,6 +1153,7 @@ async function init(){
   rebuildCatSelect();
   rebuildCardSelect();
   renderRecent();
+  updateBalanceCards();
 }
 init();
 </script>
