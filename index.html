@@ -719,11 +719,33 @@ function renderSettings(){
 async function saveCfg(){
   CFG.apiKey=document.getElementById('s-key').value.trim();
   CFG.binId=document.getElementById('s-bin').value.trim();
-  cfgSave(); tip('✓ 設定已儲存，同步中…');
-  await loadData();
+  cfgSave();
+  // Check if JSONBin bin is empty; if so, upload local data first
+  tip('✓ 設定已儲存，檢查雲端資料…');
+  loading(true);
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}/latest`,{headers:{'X-Master-Key':CFG.apiKey}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    const remote=j.record||{};
+    const remoteCount=(remote.records||[]).length+(remote.cards||[]).length;
+    const localCount=D.records.length+D.cards.length;
+    if(remoteCount===0 && localCount>0){
+      // Remote is empty but local has data → upload local to remote
+      tip('雲端無資料，上傳本機資料中…');
+      await saveData();
+      tip(`✓ 已上傳本機資料：${D.cards.length}張卡，${D.records.length}筆紀錄`);
+    } else {
+      // Remote has data → load it
+      D={cards:[],categories:[...DEF_CATS],records:[],...remote};
+      if(!D.categories.length) D.categories=[...DEF_CATS];
+      localSave();
+      tip(`✓ 已從雲端載入：${D.cards.length}張卡，${D.records.length}筆紀錄`);
+    }
+  }catch(e){ tip('⚠ 連線失敗：'+e.message,false); }
+  loading(false);
   rebuildCatSelect(); rebuildCardSelect(); renderRecent();
   renderSettings();
-  tip('✓ 設定已儲存，資料已同步');
 }
 async function addCard(){
   const name=document.getElementById('s-cname').value.trim();
