@@ -308,7 +308,7 @@ function cfgSave(){ localStorage.setItem('acct_c',JSON.stringify(CFG)); }
 function cfgLoad(){ const s=localStorage.getItem('acct_c'); if(s) try{ CFG={...CFG,...JSON.parse(s)}; }catch(e){} }
 
 // ── JSONBin ────────────────────────────────────────────────────────────
-async function loadData(){
+async function loadData(showTip){
   if(!CFG.apiKey||!CFG.binId){ localLoad(); return; }
   loading(true);
   try{
@@ -318,7 +318,8 @@ async function loadData(){
     D={cards:[],categories:[...DEF_CATS],records:[],...j.record};
     if(!D.categories.length) D.categories=[...DEF_CATS];
     localSave();
-  }catch(e){ localLoad(); console.warn('JSONBin load:',e.message); }
+    if(showTip) tip(`✓ 已同步：${D.cards.length}張卡，${D.records.length}筆紀錄`);
+  }catch(e){ localLoad(); tip('⚠ 雲端載入失敗，使用本機快取',false); console.warn('JSONBin load:',e.message); }
   loading(false);
 }
 async function saveData(){
@@ -715,10 +716,14 @@ function renderSettings(){
   document.getElementById('s-bin').value=CFG.binId||'';
   renderCardList(); renderCatList();
 }
-function saveCfg(){
+async function saveCfg(){
   CFG.apiKey=document.getElementById('s-key').value.trim();
   CFG.binId=document.getElementById('s-bin').value.trim();
-  cfgSave(); tip('✓ 設定已儲存');
+  cfgSave(); tip('✓ 設定已儲存，同步中…');
+  await loadData();
+  rebuildCatSelect(); rebuildCardSelect(); renderRecent();
+  renderSettings();
+  tip('✓ 設定已儲存，資料已同步');
 }
 async function addCard(){
   const name=document.getElementById('s-cname').value.trim();
@@ -767,9 +772,8 @@ function renderCatList(){
     `<span class="chip">${c}${DEF_CATS.includes(c)?'':` <button onclick="delCat('${c}')">✕</button>`}</span>`).join('');
 }
 async function reloadAll(){
-  loading(true); await loadData(); loading(false);
+  await loadData(true);
   rebuildCatSelect(); rebuildCardSelect(); renderRecent(); renderCardList(); renderCatList();
-  tip('✓ 已重新載入');
 }
 function clearCache(){
   if(!confirm('確定清除本機快取？不影響 JSONBin 雲端資料。')) return;
