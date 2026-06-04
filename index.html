@@ -222,31 +222,51 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   <div id="cr-empty" class="empty" style="display:none">尚未新增信用卡<br>請前往設定頁面新增</div>
   <div id="cr-main" style="display:none">
     <div class="card-tabs" id="cr-tabs"></div>
-    <div class="card">
-      <div class="card-title">篩選期間</div>
-      <div class="form-row">
-        <div class="fg"><label>起始年月</label><input type="month" id="cr-from"></div>
-        <div class="fg"><label>結束年月</label><input type="month" id="cr-to"></div>
+
+    <!-- 全部卡片總覽 -->
+    <div id="cr-all-view" style="display:none">
+      <div class="card">
+        <div class="card-title">本期各卡應繳</div>
+        <div id="cr-all-billing"></div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="renderCreditCard()">套用</button>
+      <div class="card">
+        <div class="card-title">未結清分期（所有卡）</div>
+        <div id="cr-all-inst"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">未來 12 個月分期規劃</div>
+        <div id="cr-all-schedule"></div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-title">本期帳單</div>
-      <div id="cr-billing"></div>
+
+    <!-- 單張卡片檢視 -->
+    <div id="cr-card-view">
+      <div class="card">
+        <div class="card-title">篩選期間</div>
+        <div class="form-row">
+          <div class="fg"><label>起始年月</label><input type="month" id="cr-from"></div>
+          <div class="fg"><label>結束年月</label><input type="month" id="cr-to"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="renderCreditCard()">套用</button>
+      </div>
+      <div class="card">
+        <div class="card-title">本期帳單</div>
+        <div id="cr-billing"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">消費明細</div>
+        <div id="cr-detail"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">分期追蹤</div>
+        <div id="cr-inst"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">每月應繳摘要</div>
+        <div id="cr-monthly"></div>
+      </div>
+      <button class="btn btn-ghost" style="margin-bottom:12px" onclick="exportExcel()">📊 匯出 Excel</button>
     </div>
-    <div class="card">
-      <div class="card-title">消費明細</div>
-      <div id="cr-detail"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">分期追蹤</div>
-      <div id="cr-inst"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">每月應繳摘要</div>
-      <div id="cr-monthly"></div>
-    </div>
-    <button class="btn btn-ghost" style="margin-bottom:12px" onclick="exportExcel()">📊 匯出 Excel</button>
   </div>
 </div>
 
@@ -314,7 +334,7 @@ let entryType = 'expense';
 let payMethod = 'cash';
 let isInstall = false;
 let ovYm = ymStr(new Date());
-let crCardIdx = 0;
+let crCardIdx = -1;
 let pieChart = null, barChart = null;
 
 // ── Utils ──────────────────────────────────────────────────────────────
@@ -688,20 +708,121 @@ function renderCreditPage(){
   }
   document.getElementById('cr-empty').style.display='none';
   document.getElementById('cr-main').style.display='block';
-  // Build tabs
-  document.getElementById('cr-tabs').innerHTML=D.cards.map((c,i)=>
+  // Build tabs: 全部 + each card
+  const allTab=`<div class="ctab ${crCardIdx===-1?'on':''}" onclick="selCard(-1)">全部</div>`;
+  document.getElementById('cr-tabs').innerHTML=allTab+D.cards.map((c,i)=>
     `<div class="ctab ${i===crCardIdx?'on':''}" onclick="selCard(${i})">${c.name}</div>`).join('');
   // Default range
   if(!document.getElementById('cr-from').value){
     document.getElementById('cr-from').value=addMonths(ymStr(new Date()),-2);
     document.getElementById('cr-to').value=ymStr(new Date());
   }
-  renderCreditCard();
+  if(crCardIdx===-1) renderAllCards();
+  else renderCreditCard();
 }
 function selCard(i){
   crCardIdx=i;
   document.querySelectorAll('.ctab').forEach((t,j)=>t.classList.toggle('on',j===i));
-  renderCreditCard();
+  document.getElementById('cr-all-view').style.display=i===-1?'block':'none';
+  document.getElementById('cr-card-view').style.display=i===-1?'none':'block';
+  if(i===-1) renderAllCards();
+  else renderCreditCard();
+}
+function renderAllCards(){
+  const nowYm=ymStr(new Date());
+  // ── 本期各卡應繳 ──
+  let billingRows='', grandTotal=0;
+  D.cards.forEach(card=>{
+    const allCard=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id);
+    const now=new Date();
+    const billingYm=now.getDate()<=card.billingDate?nowYm:addMonths(nowYm,1);
+    const p=billPeriod(billingYm,card.billingDate);
+    const lump=allCard.filter(r=>!r.installment&&r.date>=p.ss&&r.date<=p.es).reduce((s,r)=>s+r.amount,0);
+    const inst=instPaymentsForYm(allCard.filter(r=>r.installment),card,billingYm).reduce((s,x)=>s+x.amt,0);
+    const total=lump+inst;
+    grandTotal+=total;
+    billingRows+=`<tr>
+      <td><div style="font-weight:500">${card.name}</div><div style="font-size:11px;color:var(--tx2)">${p.ss}～${p.es}</div></td>
+      <td class="c-org">${lump?nt(lump):'-'}</td>
+      <td class="c-org">${inst?nt(inst):'-'}</td>
+      <td style="font-weight:700;color:var(--acc)">${nt(total)}</td>
+    </tr>`;
+  });
+  document.getElementById('cr-all-billing').innerHTML=`
+    <table class="stbl">
+      <thead><tr><th>信用卡</th><th>付清</th><th>分期款</th><th>應繳</th></tr></thead>
+      <tbody>${billingRows}</tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 4px;border-top:1px solid var(--bdr);margin-top:4px">
+      <span style="font-weight:700">本期總應繳</span>
+      <span style="font-size:20px;font-weight:800;color:var(--acc)">${nt(grandTotal)}</span>
+    </div>`;
+
+  // ── 未結清分期（所有卡）──
+  const allInst=[];
+  D.cards.forEach(card=>{
+    const instRecs=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id&&r.installment&&r.installmentTotal>0);
+    instRecs.forEach(r=>{
+      const startYm=billYmFor(r.date,card.billingDate);
+      const paid=Math.min(Math.max(0,monthDiff(startYm,nowYm)+1),r.installmentTotal);
+      const remain=r.installmentTotal-paid;
+      allInst.push({r,card,startYm,paid,remain,monthly:Math.round(r.amount/r.installmentTotal)});
+    });
+  });
+  allInst.sort((a,b)=>b.remain-a.remain);
+  const instEl=document.getElementById('cr-all-inst');
+  if(!allInst.length){ instEl.innerHTML='<div class="empty">目前無未結清分期</div>'; }
+  else{
+    instEl.innerHTML=allInst.map(({r,card,paid,remain,monthly})=>{
+      const done=remain===0;
+      const pct=Math.round(paid/r.installmentTotal*100);
+      return `<div style="padding:12px 0;border-bottom:1px solid var(--bdr)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div>
+            <div style="font-size:14px;font-weight:500">${r.category}${r.note?' · '+r.note:''}</div>
+            <div style="font-size:11px;color:var(--tx2)">${card.name} · ${r.date} · 每期 ${nt(monthly)}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:8px">
+            <div style="font-size:15px;font-weight:700;color:var(--org)">${nt(r.amount)}</div>
+            <div style="font-size:11px;color:${done?'var(--grn)':'var(--tx2)'}">${done?'✓ 已還清':'剩 '+remain+' 期'}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="prog" style="flex:1"><div class="prog-fill" style="width:${pct}%"></div></div>
+          <div style="font-size:11px;color:var(--tx2);white-space:nowrap">${paid}/${r.installmentTotal} 期</div>
+        </div>
+      </div>`;
+    }).join('')+`<div style="text-align:right;padding:10px 0 4px;font-size:13px;color:var(--tx2)">
+      未結清分期餘額合計：<span style="color:var(--red);font-weight:700">${nt(allInst.filter(x=>x.remain>0).reduce((s,x)=>s+x.remain*x.monthly,0))}</span>
+    </div>`;
+  }
+
+  // ── 未來 12 個月分期規劃 ──
+  const scheduleRows=[];
+  for(let m=0;m<12;m++){
+    const ym=addMonths(nowYm,m);
+    let total=0;
+    const breakdown=[];
+    D.cards.forEach(card=>{
+      const instRecs=D.records.filter(r=>r.type==='expense'&&r.cardId===card.id&&r.installment);
+      const pays=instPaymentsForYm(instRecs,card,ym);
+      const amt=pays.reduce((s,x)=>s+x.amt,0);
+      if(amt>0) breakdown.push(`${card.name} ${nt(amt)}`);
+      total+=amt;
+    });
+    scheduleRows.push({ym,total,breakdown});
+  }
+  document.getElementById('cr-all-schedule').innerHTML=`
+    <table class="stbl">
+      <thead><tr><th>月份</th><th>各卡明細</th><th>分期合計</th></tr></thead>
+      <tbody>${scheduleRows.map(row=>`
+        <tr style="${row.ym===nowYm?'background:rgba(0,191,165,.07)':''}">
+          <td style="white-space:nowrap">${ymLabel(row.ym)}${row.ym===nowYm?' <span style="font-size:10px;color:var(--acc)">▸本月</span>':''}</td>
+          <td style="font-size:12px;color:var(--tx2)">${row.breakdown.join('、')||'-'}</td>
+          <td style="font-weight:700;color:${row.total?'var(--acc)':'var(--tx2)'}">${row.total?nt(row.total):'-'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
 function renderCreditCard(){
   const card=D.cards[crCardIdx]; if(!card) return;
