@@ -955,11 +955,12 @@ function renderAllCards(){
     });
   });
   allInst.sort((a,b)=>b.remain-a.remain);
+  const unpaidInst=allInst.filter(x=>x.remain>0);
   const instEl=document.getElementById('cr-all-inst');
-  if(!allInst.length){ instEl.innerHTML='<div class="empty">目前無未結清分期</div>'; }
+  if(!unpaidInst.length){ instEl.innerHTML='<div class="empty">目前無未結清分期</div>'; }
   else{
-    instEl.innerHTML=allInst.map(({r,card,paid,remain,monthly})=>{
-      const done=remain===0; const pct=Math.round(paid/r.installmentTotal*100);
+    instEl.innerHTML=unpaidInst.map(({r,card,paid,remain,monthly})=>{
+      const pct=Math.round(paid/r.installmentTotal*100);
       return `<div style="padding:12px 0;border-bottom:1px solid var(--bdr)">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
           <div>
@@ -967,8 +968,8 @@ function renderAllCards(){
             <div style="font-size:11px;color:var(--tx2)">${card.name} · ${r.date} · ${nt(r.amount)} · 每期 ${nt(monthly)}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;margin-left:8px">
-            <div style="font-size:15px;font-weight:700;color:${done?'var(--grn)':'var(--red)'}">${done?'✓ 已還清':nt(remain*monthly)}</div>
-            <div style="font-size:11px;color:var(--tx2);white-space:nowrap">${done?'':'已繳 '+paid+'/'+r.installmentTotal+' 期'}</div>
+            <div style="font-size:15px;font-weight:700;color:var(--red)">${nt(remain*monthly)}</div>
+            <div style="font-size:11px;color:var(--tx2);white-space:nowrap">已繳 ${paid}/${r.installmentTotal} 期</div>
           </div>
         </div>
         <div class="prog"><div class="prog-fill" style="width:${pct}%"></div></div>
@@ -1118,15 +1119,19 @@ function renderCrDetail(recs){
 function renderInstTrack(recs,card,viewYm){
   const inst=recs.filter(r=>r.installment&&r.installmentTotal>0);
   const el=document.getElementById('cr-inst');
-  if(!inst.length){ el.innerHTML='<div class="empty">無分期記錄</div>'; return; }
   const nowYm=viewYm||ymStr(new Date());
-  el.innerHTML=inst.map(r=>{
+  const unpaid=inst.filter(r=>{
+    const startYm=billYmFor(r.date,card.billingDate);
+    const paid=Math.min(Math.max(0,monthDiff(startYm,nowYm)+1),r.installmentTotal);
+    return paid<r.installmentTotal;
+  });
+  if(!unpaid.length){ el.innerHTML='<div class="empty">目前無未結清分期</div>'; return; }
+  el.innerHTML=unpaid.map(r=>{
     const startYm=billYmFor(r.date,card.billingDate);
     const paid=Math.min(Math.max(0,monthDiff(startYm,nowYm)+1),r.installmentTotal);
     const remain=r.installmentTotal-paid;
     const monthly=Math.round(r.amount/r.installmentTotal);
     const pct=Math.round(paid/r.installmentTotal*100);
-    const done=remain===0;
     return `<div style="padding:12px 0;border-bottom:1px solid var(--bdr)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div>
@@ -1134,8 +1139,8 @@ function renderInstTrack(recs,card,viewYm){
           <div style="font-size:11px;color:var(--tx2)">${r.date} · ${nt(r.amount)} · 每期 ${nt(monthly)}</div>
         </div>
         <div style="text-align:right;flex-shrink:0;margin-left:8px">
-          <div style="font-size:15px;font-weight:700;color:${done?'var(--grn)':'var(--red)'}">${done?'✓ 已還清':nt(remain*monthly)}</div>
-          <div style="font-size:11px;color:var(--tx2)">${done?'':'已繳 '+paid+'/'+r.installmentTotal+' 期'}</div>
+          <div style="font-size:15px;font-weight:700;color:var(--red)">${nt(remain*monthly)}</div>
+          <div style="font-size:11px;color:var(--tx2)">已繳 ${paid}/${r.installmentTotal} 期</div>
         </div>
       </div>
       <div class="prog"><div class="prog-fill" style="width:${pct}%"></div></div>
