@@ -289,7 +289,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 <div id="pg-credit" class="pg">
   <div id="cr-empty" class="empty" style="display:none">尚未新增信用卡<br>請前往設定頁面新增</div>
   <div id="cr-main" style="display:none">
-    <div class="fg" style="margin-bottom:12px"><select id="cr-tabs" onchange="selCard(parseInt(this.value))"></select></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+      <button id="cr-all-btn" class="ctab" onclick="selCard(-1)">全部</button>
+      <select id="cr-tabs" onchange="selCard(parseInt(this.value))" style="flex:1;background:var(--card);border:1px solid var(--bdr);color:var(--tx);border-radius:8px;padding:8px 12px;font-size:14px;outline:none;-webkit-appearance:none"></select>
+    </div>
     <!-- 全部卡片總覽 -->
     <div id="cr-all-view" style="display:none">
       <div class="card">
@@ -887,8 +890,14 @@ function renderCreditPage(){
   document.getElementById('cr-empty').style.display='none';
   document.getElementById('cr-main').style.display='block';
   document.getElementById('cr-tabs').innerHTML=
-    `<option value="-1">全部</option>`+D.cards.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');
-  document.getElementById('cr-tabs').value=String(crCardIdx);
+    `<option value="" disabled>選擇卡片…</option>`+D.cards.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');
+  if(crCardIdx===-1){
+    document.getElementById('cr-all-btn').classList.add('on');
+    document.getElementById('cr-tabs').value='';
+  } else {
+    document.getElementById('cr-all-btn').classList.remove('on');
+    document.getElementById('cr-tabs').value=String(crCardIdx);
+  }
   if(!document.getElementById('cr-from').value){
     document.getElementById('cr-from').value=addMonths(ymStr(new Date()),-2);
     document.getElementById('cr-to').value=ymStr(new Date());
@@ -899,7 +908,13 @@ function renderCreditPage(){
 }
 function selCard(i){
   crCardIdx=i;
-  document.getElementById('cr-tabs').value=String(i);
+  if(i===-1){
+    document.getElementById('cr-all-btn').classList.add('on');
+    document.getElementById('cr-tabs').value='';
+  } else {
+    document.getElementById('cr-all-btn').classList.remove('on');
+    document.getElementById('cr-tabs').value=String(i);
+  }
   document.getElementById('cr-all-view').style.display=i===-1?'block':'none';
   document.getElementById('cr-card-view').style.display=i===-1?'none':'block';
   if(i===-1) renderAllCards(); else renderCreditCard();
