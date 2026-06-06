@@ -289,7 +289,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 <div id="pg-credit" class="pg">
   <div id="cr-empty" class="empty" style="display:none">尚未新增信用卡<br>請前往設定頁面新增</div>
   <div id="cr-main" style="display:none">
-    <div class="card-tabs" id="cr-tabs"></div>
+    <div class="fg" style="margin-bottom:12px"><select id="cr-tabs" onchange="selCard(parseInt(this.value))"></select></div>
     <!-- 全部卡片總覽 -->
     <div id="cr-all-view" style="display:none">
       <div class="card">
@@ -886,9 +886,9 @@ function renderCreditPage(){
   }
   document.getElementById('cr-empty').style.display='none';
   document.getElementById('cr-main').style.display='block';
-  const allTab=`<div class="ctab ${crCardIdx===-1?'on':''}" onclick="selCard(-1)">全部</div>`;
-  document.getElementById('cr-tabs').innerHTML=allTab+D.cards.map((c,i)=>
-    `<div class="ctab ${i===crCardIdx?'on':''}" onclick="selCard(${i})">${c.name}</div>`).join('');
+  document.getElementById('cr-tabs').innerHTML=
+    `<option value="-1">全部</option>`+D.cards.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');
+  document.getElementById('cr-tabs').value=String(crCardIdx);
   if(!document.getElementById('cr-from').value){
     document.getElementById('cr-from').value=addMonths(ymStr(new Date()),-2);
     document.getElementById('cr-to').value=ymStr(new Date());
@@ -899,7 +899,7 @@ function renderCreditPage(){
 }
 function selCard(i){
   crCardIdx=i;
-  document.querySelectorAll('.ctab').forEach((t,j)=>t.classList.toggle('on',j===i+1));
+  document.getElementById('cr-tabs').value=String(i);
   document.getElementById('cr-all-view').style.display=i===-1?'block':'none';
   document.getElementById('cr-card-view').style.display=i===-1?'none':'block';
   if(i===-1) renderAllCards(); else renderCreditCard();
