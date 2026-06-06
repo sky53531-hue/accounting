@@ -964,17 +964,14 @@ function renderAllCards(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
           <div>
             <div style="font-size:14px;font-weight:500">${r.category}${r.note?' · '+r.note:''}</div>
-            <div style="font-size:11px;color:var(--tx2)">${card.name} · ${r.date} · 每期 ${nt(monthly)}</div>
+            <div style="font-size:11px;color:var(--tx2)">${card.name} · ${r.date} · ${nt(r.amount)} · 每期 ${nt(monthly)}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;margin-left:8px">
-            <div style="font-size:15px;font-weight:700;color:var(--org)">${nt(r.amount)}</div>
-            <div style="font-size:11px;color:${done?'var(--grn)':'var(--tx2)'}">${done?'✓ 已還清':'剩 '+remain+' 期'}</div>
+            <div style="font-size:15px;font-weight:700;color:${done?'var(--grn)':'var(--red)'}">${done?'✓ 已還清':nt(remain*monthly)}</div>
+            <div style="font-size:11px;color:var(--tx2);white-space:nowrap">${done?'':'已繳 '+paid+'/'+r.installmentTotal+' 期'}</div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="prog" style="flex:1"><div class="prog-fill" style="width:${pct}%"></div></div>
-          <div style="font-size:11px;color:var(--tx2);white-space:nowrap">${paid}/${r.installmentTotal} 期</div>
-        </div>
+        <div class="prog"><div class="prog-fill" style="width:${pct}%"></div></div>
       </div>`;
     }).join('')+`<div style="text-align:right;padding:10px 0 4px;font-size:13px;color:var(--tx2)">
       未結清分期餘額合計：<span style="color:var(--red);font-weight:700">${nt(allInst.filter(x=>x.remain>0).reduce((s,x)=>s+x.remain*x.monthly,0))}</span>
@@ -1134,11 +1131,11 @@ function renderInstTrack(recs,card,viewYm){
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div>
           <div style="font-size:14px;font-weight:500">${r.category}${r.note?' · '+r.note:''}</div>
-          <div style="font-size:11px;color:var(--tx2)">${r.date} · 每期 ${nt(monthly)}</div>
+          <div style="font-size:11px;color:var(--tx2)">${r.date} · ${nt(r.amount)} · 每期 ${nt(monthly)}</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:15px;font-weight:700;color:var(--org)">${nt(r.amount)}</div>
-          <div style="font-size:11px;color:${done?'var(--grn)':'var(--tx2)'}">${done?'✓ 已還清':'已繳 '+paid+'/'+r.installmentTotal+' 期'}</div>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px">
+          <div style="font-size:15px;font-weight:700;color:${done?'var(--grn)':'var(--red)'}">${done?'✓ 已還清':nt(remain*monthly)}</div>
+          <div style="font-size:11px;color:var(--tx2)">${done?'':'已繳 '+paid+'/'+r.installmentTotal+' 期'}</div>
         </div>
       </div>
       <div class="prog"><div class="prog-fill" style="width:${pct}%"></div></div>
