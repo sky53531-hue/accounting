@@ -974,7 +974,7 @@ function renderAllCards(){
   }
   renderAllRecurring();
   const scheduleRows=[];
-  for(let mo=0;mo<12;mo++){
+  for(let mo=0;mo<6;mo++){
     const ym=addMonths(nowYm,mo); let total=0; const breakdown=[];
     D.cards.forEach(card=>{
       const instRecs=D.records.filter(r=>isCreditRec(r,card.id)&&r.installment);
