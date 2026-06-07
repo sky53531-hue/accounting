@@ -961,8 +961,8 @@ function renderAllCards(){
             <div style="font-size:11px;color:var(--tx2)">${card.name} · ${r.date} · ${nt(r.amount)}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;margin-left:8px">
-            <div style="font-size:11px;color:var(--tx2);white-space:nowrap">每期 ${nt(monthly)}</div>
-            <div style="font-size:15px;font-weight:700;color:var(--red)">${nt(remain*monthly)}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--org);white-space:nowrap">每期 ${nt(monthly)}</div>
+            <div style="font-size:14px;font-weight:700;color:var(--red)">${nt(remain*monthly)}</div>
             <div style="font-size:11px;color:var(--tx2);white-space:nowrap">已繳 ${paid}/${r.installmentTotal} 期</div>
           </div>
         </div>
@@ -1133,8 +1133,8 @@ function renderInstTrack(recs,card,viewYm){
           <div style="font-size:11px;color:var(--tx2)">${r.date} · ${nt(r.amount)}</div>
         </div>
         <div style="text-align:right;flex-shrink:0;margin-left:8px">
-          <div style="font-size:11px;color:var(--tx2);white-space:nowrap">每期 ${nt(monthly)}</div>
-          <div style="font-size:15px;font-weight:700;color:var(--red)">${nt(remain*monthly)}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--org);white-space:nowrap">每期 ${nt(monthly)}</div>
+          <div style="font-size:14px;font-weight:700;color:var(--red)">${nt(remain*monthly)}</div>
           <div style="font-size:11px;color:var(--tx2)">已繳 ${paid}/${r.installmentTotal} 期</div>
         </div>
       </div>
