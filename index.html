@@ -262,9 +262,9 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
       <div class="bv" style="color:var(--coral)" id="bal-box">NT$0</div>
       <button onclick="resetBucket('box')" style="position:absolute;top:6px;right:6px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
     </div>
-    <div class="bal-card" style="background:rgba(105,240,174,.08);border-color:rgba(105,240,174,.25);position:relative">
-      <div class="bl" style="color:var(--grn)">外借箱</div>
-      <div class="bv" style="color:var(--grn)" id="bal-lend">NT$0</div>
+    <div class="bal-card" style="background:rgba(240,98,146,.08);border-color:rgba(240,98,146,.25);position:relative">
+      <div class="bl" style="color:#F06292">外借箱</div>
+      <div class="bv" style="color:#F06292" id="bal-lend">NT$0</div>
       <button onclick="resetBucket('lend')" style="position:absolute;top:6px;right:6px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
     </div>
     <div class="bal-card" style="background:rgba(54,162,235,.08);border-color:rgba(54,162,235,.25);position:relative">
@@ -792,17 +792,17 @@ function refreshCurrentView(){
 // ── Overview Page ──────────────────────────────────────────────────────
 function updateBalanceCards(){
   const b=getBalances();
-  const setBal=(id,val)=>{
+  const setBal=(id,val,pos='')=>{
     const el=document.getElementById(id);
     el.textContent=ntBal(val);
-    el.style.color=val<0?'var(--red)':'';
+    el.style.color=val<0?'var(--red)':pos;
   };
   setBal('bal-account',b.account);
   setBal('bal-wallet',b.wallet);
   setBal('bal-piggy',b.piggy);
-  setBal('bal-box',b.box);
-  setBal('bal-lend',b.lend);
-  setBal('bal-yuanta',b.yuanta);
+  setBal('bal-box',b.box,'var(--coral)');
+  setBal('bal-lend',b.lend,'#F06292');
+  setBal('bal-yuanta',b.yuanta,'#36A2EB');
 }
 async function resetBucket(bucket){
   const label=BUCKET_LABEL[bucket]||bucket;
