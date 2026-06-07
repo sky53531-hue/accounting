@@ -622,8 +622,8 @@ function recHtml(r){
   if(r.type==='credit'){
     const cardName=r.cardId?(D.cards.find(c=>c.id===r.cardId)?.name||''):'';
     const badgeTxt=r.installment?`分${r.installmentTotal}期`:'刷卡';
-    const badgeColor=r.installment?'rgba(255,183,77,.2)':'rgba(0,191,165,.15)';
-    const badgeTColor=r.installment?'var(--org)':'var(--acc)';
+    const badgeColor=r.installment?'rgba(206,147,216,.2)':'rgba(0,191,165,.15)';
+    const badgeTColor=r.installment?'var(--purple)':'var(--acc)';
     return `<div class="ri">
       <div style="flex:1;min-width:0">
         <div class="ri-cat">${r.category||'消費'}<span class="badge" style="background:${badgeColor};color:${badgeTColor}">${badgeTxt}</span></div>
