@@ -614,17 +614,32 @@ function onEdToChange(){
   row.style.display=val==='creditpay'?'block':'none';
   if(val==='creditpay') rebuildCreditpayCardSelect('ed-creditpay-card');
 }
+function cpWindowStart(billingDate){
+  // Returns the date string (YYYY-MM-DD) from which creditpay records count for this card.
+  // Window resets the day AFTER (billingDate + 20 days), so we find the most recent
+  // such reset point that is <= today, then return the next day as window start.
+  const today=new Date(); today.setHours(23,59,59,999);
+  const y=today.getFullYear(), m=today.getMonth(); // m: 0-indexed
+  for(let off=0;off<=24;off++){
+    let by=y, bm=m-off;
+    while(bm<0){bm+=12;by--;}
+    const reset=new Date(by,bm,billingDate+20); // JS auto-handles overflow (e.g. 35→next month)
+    if(reset<=today){
+      const start=new Date(reset); start.setDate(start.getDate()+1);
+      return start.toISOString().slice(0,10);
+    }
+  }
+  return '2000-01-01';
+}
 function renderCreditpaySection(){
   const el=document.getElementById('creditpay-section');
   if(!D.cards.length){ el.style.display='none'; return; }
-  const nowYm=ymStr(new Date());
-  const pays=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.date.slice(0,7)===nowYm);
   el.style.display='block';
-  const byCard={};
-  pays.forEach(r=>{ byCard[r.cardId]=(byCard[r.cardId]||0)+r.amount; });
   document.getElementById('creditpay-list').innerHTML=D.cards.map(card=>{
-    const amt=byCard[card.id]||0;
-    const paid=!!byCard[card.id];
+    const ws=cpWindowStart(card.billingDate);
+    const pays=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date>=ws);
+    const amt=pays.reduce((s,r)=>s+r.amount,0);
+    const paid=pays.length>0;
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr)">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:18px">${paid?'✅':'⬜'}</span>
@@ -991,7 +1006,7 @@ function renderAllCards(){
     const inst=instPaymentsForYm(allCard.filter(r=>r.installment),card,billingYm).reduce((s,x)=>s+x.amt,0);
     const recur=(D.recurring||[]).filter(r=>r.cardId===card.id&&r.startYm<=billingYm).reduce((s,r)=>s+r.amount,0);
     const total=lump+inst+recur; grandTotal+=total;
-    const cpRecs=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date.slice(0,7)===nowYm);
+    const cpRecs=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date>=cpWindowStart(card.billingDate));
     const cpAmt=cpRecs.reduce((s,r)=>s+r.amount,0);
     const cpBadge=cpRecs.length?` <span style="font-size:10px;color:#4CAF50;background:rgba(76,175,80,.15);border-radius:4px;padding:1px 5px">✓ 已繳 ${nt(cpAmt)}</span>`:'';
     billingRows+=`<tr>
