@@ -424,8 +424,8 @@ let editId=null, editMode='income';
 
 // ── Utils ──────────────────────────────────────────────────────────────
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-function nt(n){ return 'NT$'+Math.abs(Math.round(n)).toLocaleString(); }
-function ntBal(n){ return (n<0?'-':'')+'NT$'+Math.abs(Math.round(n)).toLocaleString(); }
+function nt(n){ return '$'+Math.abs(Math.round(n)).toLocaleString(); }
+function ntBal(n){ return (n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString(); }
 function ymStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
 function ymLabel(ym){ const[y,m]=ym.split('-'); return y+'年'+parseInt(m)+'月'; }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
