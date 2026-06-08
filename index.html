@@ -154,16 +154,18 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
           </select>
         </div>
         <div class="fg"><label>到</label>
-          <select id="ed-to">
+          <select id="ed-to" onchange="onEdToChange()">
             <option value="wallet">錢包</option>
             <option value="account">帳戶</option>
             <option value="piggy">金雞母池</option>
             <option value="box">公費箱</option>
             <option value="lend">外借箱</option>
             <option value="yuanta">元大金桶</option>
+            <option value="creditpay">信用卡繳費</option>
           </select>
         </div>
       </div>
+      <div class="fg" id="ed-creditpay-card-row" style="display:none"><label>繳費信用卡</label><select id="ed-creditpay-card"></select></div>
     </div>
     <div class="fg"><label>備註（選填）</label><textarea id="ed-note" placeholder="輸入備註..."></textarea></div>
     <div style="display:flex;gap:8px;margin-top:4px">
@@ -220,16 +222,18 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
           </select>
         </div>
         <div class="fg"><label>到</label>
-          <select id="e-to">
+          <select id="e-to" onchange="onToChange()">
             <option value="wallet">錢包</option>
             <option value="account">帳戶</option>
             <option value="piggy">金雞母池</option>
             <option value="box">公費箱</option>
             <option value="lend">外借箱</option>
             <option value="yuanta">元大金桶</option>
+            <option value="creditpay">信用卡繳費</option>
           </select>
         </div>
       </div>
+      <div class="fg" id="e-creditpay-card-row" style="display:none"><label>繳費信用卡</label><select id="e-creditpay-card"></select></div>
     </div>
     <div class="fg"><label>備註（選填）</label><textarea id="e-note" placeholder="輸入備註..."></textarea></div>
     <button class="btn btn-acc" onclick="saveRecord()">儲存</button>
@@ -272,6 +276,11 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
       <div class="bv" style="color:#36A2EB" id="bal-yuanta">NT$0</div>
       <button onclick="resetBucket('yuanta')" style="position:absolute;top:6px;right:6px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
     </div>
+  </div>
+  <!-- 信用卡繳費狀態 -->
+  <div id="creditpay-section" class="card" style="display:none">
+    <div class="card-title">本月信用卡繳費</div>
+    <div id="creditpay-list"></div>
   </div>
   <div class="month-nav">
     <button onclick="chMonth(-1)">&#8249;</button>
@@ -401,7 +410,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
 'use strict';
 const DEF_CATS=['餐飲','交通','購物','娛樂','醫療','居家','其他','薪資','獎金'];
 const CAT_COLORS=['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FF6B6B','#45B7D1','#96CEB4','#FFEAA7'];
-const BUCKET_LABEL={account:'帳戶',wallet:'錢包',piggy:'金雞母池',box:'公費箱',lend:'外借箱',yuanta:'元大金桶'};
+const BUCKET_LABEL={account:'帳戶',wallet:'錢包',piggy:'金雞母池',box:'公費箱',lend:'外借箱',yuanta:'元大金桶',creditpay:'信用卡繳費'};
 
 let D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],resets:[]};
 let CFG={apiKey:'',binId:''};
@@ -561,6 +570,7 @@ function setMode(m){
   document.getElementById('e-cat-row').style.display=m==='transfer'?'none':'block';
   document.getElementById('e-credit-sec').style.display=m==='credit'?'block':'none';
   document.getElementById('e-transfer-sec').style.display=m==='transfer'?'block':'none';
+  if(m==='transfer') onToChange();
   if(m!=='credit'){
     isInstall=false; isRecurring=false;
     document.getElementById('inst-section').style.display='none';
@@ -586,6 +596,43 @@ function rebuildCardSelect(){
   const sel=document.getElementById('e-card');
   if(!D.cards.length){ sel.innerHTML='<option value="">（請先在設定新增信用卡）</option>'; return; }
   sel.innerHTML=D.cards.map(c=>`<option value="${c.id}">${c.name}（${c.billingDate}號）</option>`).join('');
+}
+function rebuildCreditpayCardSelect(selId){
+  const sel=document.getElementById(selId);
+  if(!D.cards.length){ sel.innerHTML='<option value="">（請先新增信用卡）</option>'; return; }
+  sel.innerHTML=D.cards.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+function onToChange(){
+  const val=document.getElementById('e-to').value;
+  const row=document.getElementById('e-creditpay-card-row');
+  row.style.display=val==='creditpay'?'block':'none';
+  if(val==='creditpay') rebuildCreditpayCardSelect('e-creditpay-card');
+}
+function onEdToChange(){
+  const val=document.getElementById('ed-to').value;
+  const row=document.getElementById('ed-creditpay-card-row');
+  row.style.display=val==='creditpay'?'block':'none';
+  if(val==='creditpay') rebuildCreditpayCardSelect('ed-creditpay-card');
+}
+function renderCreditpaySection(){
+  const el=document.getElementById('creditpay-section');
+  if(!D.cards.length){ el.style.display='none'; return; }
+  const nowYm=ymStr(new Date());
+  const pays=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.date.slice(0,7)===nowYm);
+  el.style.display='block';
+  const byCard={};
+  pays.forEach(r=>{ byCard[r.cardId]=(byCard[r.cardId]||0)+r.amount; });
+  document.getElementById('creditpay-list').innerHTML=D.cards.map(card=>{
+    const amt=byCard[card.id]||0;
+    const paid=!!byCard[card.id];
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">${paid?'✅':'⬜'}</span>
+        <span style="font-size:14px;font-weight:500">${card.name}</span>
+      </div>
+      ${paid?`<span style="font-size:14px;font-weight:700;color:var(--acc)">${nt(amt)}</span>`:'<span style="font-size:13px;color:var(--tx2)">未繳</span>'}
+    </div>`;
+  }).join('');
 }
 function renderRecent(){
   const today=todayStr();
@@ -635,7 +682,12 @@ function recHtml(r){
     </div>`;
   }
   if(r.type==='transfer'){
-    const fl=BUCKET_LABEL[r.from]||r.from, tl=BUCKET_LABEL[r.to]||r.to;
+    const fl=BUCKET_LABEL[r.from]||r.from;
+    let tl=BUCKET_LABEL[r.to]||r.to;
+    if(r.to==='creditpay'&&r.cardId){
+      const card=D.cards.find(c=>c.id===r.cardId);
+      if(card) tl=`${card.name}（繳費）`;
+    }
     return `<div class="ri">
       <div style="flex:1;min-width:0">
         <div class="ri-cat" style="color:var(--purple)">${fl} → ${tl}</div>
@@ -691,6 +743,11 @@ async function saveRecord(){
     const to=document.getElementById('e-to').value;
     if(from===to){ tip('轉出和轉入不能相同',false); return; }
     rec.from=from; rec.to=to;
+    if(to==='creditpay'){
+      const cardSel=document.getElementById('e-creditpay-card');
+      if(!cardSel.value){ tip('請選擇繳費的信用卡',false); return; }
+      rec.cardId=cardSel.value;
+    }
   }
 
   D.records.push(rec);
@@ -720,6 +777,7 @@ function setEditMode(m){
   document.getElementById('ed-cat-row').style.display=m==='transfer'?'none':'block';
   document.getElementById('ed-credit-sec').style.display=m==='credit'?'block':'none';
   document.getElementById('ed-transfer-sec').style.display=m==='transfer'?'block':'none';
+  if(m!=='transfer') document.getElementById('ed-creditpay-card-row').style.display='none';
 }
 function openEdit(id){
   const r=D.records.find(r=>r.id===id); if(!r) return;
@@ -738,6 +796,8 @@ function openEdit(id){
   if(m==='transfer'){
     document.getElementById('ed-from').value=r.from||'account';
     document.getElementById('ed-to').value=r.to||'wallet';
+    onEdToChange();
+    if(r.to==='creditpay'&&r.cardId) document.getElementById('ed-creditpay-card').value=r.cardId;
   }
   document.getElementById('ed-note').value=r.note||'';
   document.getElementById('edit-modal').style.display='flex';
@@ -766,6 +826,11 @@ async function saveEdit(){
     const to=document.getElementById('ed-to').value;
     if(from===to){ tip('轉出和轉入不能相同',false); return; }
     updated.from=from; updated.to=to;
+    if(to==='creditpay'){
+      const cardSel=document.getElementById('ed-creditpay-card');
+      if(!cardSel.value){ tip('請選擇繳費的信用卡',false); return; }
+      updated.cardId=cardSel.value;
+    } else { delete updated.cardId; }
   }
   D.records[idx]=updated;
   loading(true); await saveData(); loading(false);
@@ -785,6 +850,7 @@ function refreshCurrentView(){
     const recs=D.records.filter(r=>r.date.slice(0,7)===ovYm);
     drawPie(recs);
     if(datePick) renderDayList(datePick); else clearDateFilter();
+    renderCreditpaySection();
   }
   renderRecent();
 }
@@ -818,6 +884,7 @@ async function resetBucket(bucket){
 function chMonth(d){ const[y,m]=ovYm.split('-').map(Number); const nd=new Date(y,m-1+d,1); ovYm=ymStr(nd); renderOverview(); }
 function renderOverview(){
   updateBalanceCards();
+  renderCreditpaySection();
   document.getElementById('ov-label').textContent=ymLabel(ovYm);
   const recs=D.records.filter(r=>r.date.slice(0,7)===ovYm);
   const inc=recs.filter(r=>r.type==='income').reduce((s,r)=>s+r.amount,0);
@@ -924,8 +991,11 @@ function renderAllCards(){
     const inst=instPaymentsForYm(allCard.filter(r=>r.installment),card,billingYm).reduce((s,x)=>s+x.amt,0);
     const recur=(D.recurring||[]).filter(r=>r.cardId===card.id&&r.startYm<=billingYm).reduce((s,r)=>s+r.amount,0);
     const total=lump+inst+recur; grandTotal+=total;
+    const cpRecs=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date.slice(0,7)===nowYm);
+    const cpAmt=cpRecs.reduce((s,r)=>s+r.amount,0);
+    const cpBadge=cpRecs.length?` <span style="font-size:10px;color:#4CAF50;background:rgba(76,175,80,.15);border-radius:4px;padding:1px 5px">✓ 已繳 ${nt(cpAmt)}</span>`:'';
     billingRows+=`<tr>
-      <td><div style="font-weight:500">${card.name}</div></td>
+      <td><div style="font-weight:500">${card.name}${cpBadge}</div></td>
       <td class="c-org">${lump?nt(lump):'-'}</td>
       <td class="c-org">${inst?nt(inst):'-'}</td>
       <td style="color:var(--purple)">${recur?nt(recur):'-'}</td>
