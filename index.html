@@ -140,6 +140,12 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
     <div class="fg" id="ed-cat-row"><label>類別</label><select id="ed-cat"></select></div>
     <div id="ed-credit-sec" style="display:none">
       <div class="fg"><label>信用卡</label><select id="ed-card"></select></div>
+      <div class="fg"><label>幣別</label>
+        <select id="ed-currency">
+          <option value="NT">NT</option>
+          <option value="JPY">JPY</option>
+        </select>
+      </div>
     </div>
     <div id="ed-transfer-sec" style="display:none">
       <div class="form-row">
@@ -184,9 +190,15 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
       <div class="mode-btn" id="m-credit" onclick="setMode('credit')">刷卡消費</div>
       <div class="mode-btn" id="m-transfer" onclick="setMode('transfer')">資金轉移</div>
     </div>
-    <div class="form-row">
-      <div class="fg"><label>日期</label><input type="date" id="e-date"></div>
-      <div class="fg"><label>金額 (NT$)</label><input type="number" id="e-amt" placeholder="0" min="0" inputmode="decimal"></div>
+    <div class="fg"><label>日期</label><input type="date" id="e-date"></div>
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      <div class="fg" id="e-currency-wrap" style="display:none;margin:0;width:88px;flex-shrink:0"><label>幣別</label>
+        <select id="e-currency">
+          <option value="NT">NT</option>
+          <option value="JPY">JPY</option>
+        </select>
+      </div>
+      <div class="fg" style="flex:1;margin:0"><label>金額</label><input type="number" id="e-amt" placeholder="0" min="0" inputmode="decimal"></div>
     </div>
     <!-- 類別（收入/現金消費/刷卡消費顯示） -->
     <div class="fg" id="e-cat-row"><label>類別</label><select id="e-cat"></select></div>
@@ -570,6 +582,7 @@ function setMode(m){
   document.getElementById('e-cat-row').style.display=m==='transfer'?'none':'block';
   document.getElementById('e-credit-sec').style.display=m==='credit'?'block':'none';
   document.getElementById('e-transfer-sec').style.display=m==='transfer'?'block':'none';
+  document.getElementById('e-currency-wrap').style.display=m==='credit'?'block':'none';
   if(m==='transfer') onToChange();
   if(m!=='credit'){
     isInstall=false; isRecurring=false;
@@ -686,13 +699,15 @@ function recHtml(r){
     const badgeTxt=r.installment?`分${r.installmentTotal}期`:'刷卡';
     const badgeColor=r.installment?'rgba(206,147,216,.2)':'rgba(0,191,165,.15)';
     const badgeTColor=r.installment?'var(--purple)':'var(--acc)';
+    const isJpy=r.currency==='JPY';
+    const amtTxt=isJpy?('¥'+Math.abs(Math.round(r.amount)).toLocaleString()):('-'+nt(r.amount));
     return `<div class="ri">
       <div style="flex:1;min-width:0">
-        <div class="ri-cat">${r.category||'消費'}<span class="badge" style="background:${badgeColor};color:${badgeTColor}">${badgeTxt}</span></div>
+        <div class="ri-cat">${r.category||'消費'}<span class="badge" style="background:${badgeColor};color:${badgeTColor}">${badgeTxt}</span>${isJpy?'<span class="badge" style="background:rgba(54,162,235,.15);color:#36A2EB">JPY</span>':''}</div>
         <div class="ri-sub">${r.date}${cardName?' · '+cardName:''}${r.note?' · '+r.note:''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-        <div class="ri-amt c-red">-${nt(r.amount)}</div>${actions}
+        <div class="ri-amt c-red">${amtTxt}</div>${actions}
       </div>
     </div>`;
   }
@@ -746,6 +761,7 @@ async function saveRecord(){
     }
     rec.category=cat;
     rec.cardId=cardSel.value;
+    rec.currency=document.getElementById('e-currency').value||'NT';
     rec.installment=isInstall;
     rec.installmentTotal=0;
     if(isInstall){
@@ -807,6 +823,7 @@ function openEdit(id){
   if(m==='credit'){
     const cardSel=document.getElementById('ed-card');
     cardSel.innerHTML=D.cards.map(c=>`<option value="${c.id}"${c.id===r.cardId?' selected':''}>${c.name}</option>`).join('');
+    document.getElementById('ed-currency').value=r.currency||'NT';
   }
   if(m==='transfer'){
     document.getElementById('ed-from').value=r.from||'account';
@@ -836,6 +853,7 @@ async function saveEdit(){
   } else if(editMode==='credit'){
     updated.category=document.getElementById('ed-cat').value;
     updated.cardId=document.getElementById('ed-card').value||'';
+    updated.currency=document.getElementById('ed-currency').value||'NT';
   } else if(editMode==='transfer'){
     const from=document.getElementById('ed-from').value;
     const to=document.getElementById('ed-to').value;
