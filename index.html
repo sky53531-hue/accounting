@@ -271,22 +271,34 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
     <div class="bal-card" style="background:rgba(206,147,216,.08);border-color:rgba(206,147,216,.25);position:relative">
       <div class="bl c-pur">金雞母池</div>
       <div class="bv c-pur" id="bal-piggy">NT$0</div>
-      <button onclick="resetBucket('piggy')" style="position:absolute;top:6px;right:6px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+      <div style="position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:3px">
+        <button onclick="resetBucket('piggy')" style="background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+        <button onclick="undoLastReset('piggy')" style="background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.3);color:#FFB74D;border-radius:5px;font-size:9px;padding:2px 6px;cursor:pointer;font-weight:600">復原</button>
+      </div>
     </div>
     <div class="bal-card" style="background:rgba(255,138,101,.08);border-color:rgba(255,138,101,.25);position:relative">
       <div class="bl" style="color:var(--coral)">公費箱</div>
       <div class="bv" style="color:var(--coral)" id="bal-box">NT$0</div>
-      <button onclick="resetBucket('box')" style="position:absolute;top:6px;right:6px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+      <div style="position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:3px">
+        <button onclick="resetBucket('box')" style="background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+        <button onclick="undoLastReset('box')" style="background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.3);color:#FFB74D;border-radius:5px;font-size:9px;padding:2px 6px;cursor:pointer;font-weight:600">復原</button>
+      </div>
     </div>
     <div class="bal-card" style="background:rgba(240,98,146,.08);border-color:rgba(240,98,146,.25);position:relative">
       <div class="bl" style="color:#F06292">外借箱</div>
       <div class="bv" style="color:#F06292" id="bal-lend">NT$0</div>
-      <button onclick="resetBucket('lend')" style="position:absolute;top:6px;right:6px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+      <div style="position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:3px">
+        <button onclick="resetBucket('lend')" style="background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+        <button onclick="undoLastReset('lend')" style="background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.3);color:#FFB74D;border-radius:5px;font-size:9px;padding:2px 6px;cursor:pointer;font-weight:600">復原</button>
+      </div>
     </div>
     <div class="bal-card" style="background:rgba(54,162,235,.08);border-color:rgba(54,162,235,.25);position:relative">
       <div class="bl" style="color:#36A2EB">元大金桶</div>
       <div class="bv" style="color:#36A2EB" id="bal-yuanta">NT$0</div>
-      <button onclick="resetBucket('yuanta')" style="position:absolute;top:6px;right:6px;background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+      <div style="position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:3px">
+        <button onclick="resetBucket('yuanta')" style="background:rgba(255,82,82,.15);border:1px solid rgba(255,82,82,.3);color:var(--red);border-radius:5px;font-size:10px;padding:2px 6px;cursor:pointer;font-weight:600">清空</button>
+        <button onclick="undoLastReset('yuanta')" style="background:rgba(255,183,77,.1);border:1px solid rgba(255,183,77,.3);color:#FFB74D;border-radius:5px;font-size:9px;padding:2px 6px;cursor:pointer;font-weight:600">復原</button>
+      </div>
     </div>
   </div>
   <!-- 信用卡繳費狀態 -->
@@ -907,12 +919,25 @@ async function resetBucket(bucket){
   const label=BUCKET_LABEL[bucket]||bucket;
   const b=getBalances();
   const cur=b[bucket]||0;
+  if(cur===0){ tip(`${label} 已經是 0，不需要清空`,false); return; }
   if(!confirm(`確定清空${label}？\n目前餘額 ${ntBal(cur)}，清空後歸零且不列入計算。`)) return;
   D.resets=D.resets||[];
   D.resets.push({bucket,amount:cur,date:todayStr()});
   await saveData();
   updateBalanceCards();
   tip(`${label} 已清空`);
+}
+async function undoLastReset(bucket){
+  const label=BUCKET_LABEL[bucket]||bucket;
+  D.resets=D.resets||[];
+  const lastIdx=D.resets.map(r=>r.bucket).lastIndexOf(bucket);
+  if(lastIdx<0){ tip('沒有清空紀錄可復原',false); return; }
+  const last=D.resets[lastIdx];
+  if(!confirm(`復原${label}上次清空？\n清空時金額：${ntBal(last.amount)}（${last.date}）`)) return;
+  D.resets.splice(lastIdx,1);
+  await saveData();
+  updateBalanceCards();
+  tip(`${label} 清空已復原`);
 }
 function chMonth(d){ const[y,m]=ovYm.split('-').map(Number); const nd=new Date(y,m-1+d,1); ovYm=ymStr(nd); renderOverview(); }
 function renderOverview(){
