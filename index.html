@@ -306,6 +306,19 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
     <div class="card-title">本期信用卡繳費</div>
     <div id="creditpay-list"></div>
   </div>
+  <!-- 快速繳費彈窗 -->
+  <div id="qcp-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center">
+    <div style="background:var(--card);border-radius:14px;padding:24px;width:88%;max-width:360px">
+      <div id="qcp-title" style="font-size:16px;font-weight:700;margin-bottom:16px"></div>
+      <label style="font-size:13px;color:var(--tx2)">繳費金額（NT$）</label>
+      <input id="qcp-amt" type="number" inputmode="numeric" placeholder="0" min="0"
+        style="width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:18px;box-sizing:border-box">
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button onclick="document.getElementById('qcp-modal').style.display='none'" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--bdr);background:transparent;color:var(--tx2);font-size:14px">取消</button>
+        <button onclick="confirmQcp()" style="flex:1;padding:10px;border-radius:8px;background:var(--acc);color:#fff;border:none;font-size:14px;font-weight:600">記錄</button>
+      </div>
+    </div>
+  </div>
   <div class="month-nav">
     <button onclick="chMonth(-1)">&#8249;</button>
     <span id="ov-label"></span>
@@ -674,21 +687,26 @@ function renderCreditpaySection(){
     </div>`;
   }).join('');
 }
-async function quickCreditpay(cardId){
+let _qcpCardId=null;
+function quickCreditpay(cardId){
   const card=D.cards.find(c=>c.id===cardId); if(!card) return;
-  const ws=cpWindowStart(card.billingDate);
-  const pays=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date>=ws);
-  if(pays.length>0){
-    if(!confirm(`${card.name} 已有繳費紀錄（${nt(pays.reduce((s,r)=>s+r.amount,0))}），要再新增一筆嗎？`)) return;
-  }
-  const amtStr=prompt(`${card.name} 本次繳費金額（NT$）：`,'0');
-  if(amtStr===null) return;
-  const amt=parseFloat(amtStr)||0;
-  D.records.push({id:Date.now(),type:'transfer',from:'account',to:'creditpay',cardId,amount:amt,date:todayStr()});
+  _qcpCardId=cardId;
+  document.getElementById('qcp-title').textContent=card.name+' 繳費';
+  document.getElementById('qcp-amt').value='';
+  const modal=document.getElementById('qcp-modal');
+  modal.style.display='flex';
+  setTimeout(()=>document.getElementById('qcp-amt').focus(),100);
+}
+async function confirmQcp(){
+  if(!_qcpCardId) return;
+  const amt=parseFloat(document.getElementById('qcp-amt').value)||0;
+  const card=D.cards.find(c=>c.id===_qcpCardId);
+  D.records.push({id:Date.now(),type:'transfer',from:'account',to:'creditpay',cardId:_qcpCardId,amount:amt,date:todayStr()});
+  document.getElementById('qcp-modal').style.display='none';
   await saveData();
   updateBalanceCards();
   renderCreditpaySection();
-  tip(`${card.name} 繳費已記錄`);
+  tip(`${card?card.name:'信用卡'} 繳費已記錄`);
 }
 function renderRecent(){
   const today=todayStr();
