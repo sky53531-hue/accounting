@@ -667,12 +667,28 @@ function renderCreditpaySection(){
     const paid=pays.length>0;
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr)">
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:18px">${paid?'✅':'⬜'}</span>
+        <span style="font-size:18px;cursor:pointer" onclick="quickCreditpay('${card.id}')">${paid?'✅':'⬜'}</span>
         <span style="font-size:14px;font-weight:500">${card.name}</span>
       </div>
       ${paid?`<span style="font-size:14px;font-weight:700;color:var(--acc)">${nt(amt)}</span>`:'<span style="font-size:13px;color:var(--tx2)">未繳</span>'}
     </div>`;
   }).join('');
+}
+async function quickCreditpay(cardId){
+  const card=D.cards.find(c=>c.id===cardId); if(!card) return;
+  const ws=cpWindowStart(card.billingDate);
+  const pays=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date>=ws);
+  if(pays.length>0){
+    if(!confirm(`${card.name} 已有繳費紀錄（${nt(pays.reduce((s,r)=>s+r.amount,0))}），要再新增一筆嗎？`)) return;
+  }
+  const amtStr=prompt(`${card.name} 本次繳費金額（NT$）：`,'0');
+  if(amtStr===null) return;
+  const amt=parseFloat(amtStr)||0;
+  D.records.push({id:Date.now(),type:'transfer',from:'account',to:'creditpay',cardId,amount:amt,date:todayStr()});
+  await saveData();
+  updateBalanceCards();
+  renderCreditpaySection();
+  tip(`${card.name} 繳費已記錄`);
 }
 function renderRecent(){
   const today=todayStr();
@@ -1051,7 +1067,7 @@ function renderAllCards(){
     const total=lump+inst+recur; grandTotal+=total;
     const cpRecs=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date>=cpWindowStart(card.billingDate));
     const cpAmt=cpRecs.reduce((s,r)=>s+r.amount,0);
-    const cpBadge=cpRecs.length?` <span style="font-size:10px;color:#4CAF50;background:rgba(76,175,80,.15);border-radius:4px;padding:1px 5px">✓ 已繳 ${nt(cpAmt)}</span>`:'';
+    const cpBadge=cpRecs.length?` <span style="font-size:10px;color:#4CAF50;background:rgba(76,175,80,.15);border-radius:4px;padding:1px 5px;white-space:nowrap">✓ 已繳 ${nt(cpAmt)}</span>`:'';
     billingRows+=`<tr>
       <td><div style="font-weight:500">${card.name}${cpBadge}</div></td>
       <td class="c-org">${lump?nt(lump):'-'}</td>
