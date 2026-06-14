@@ -138,6 +138,12 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
       <div class="fg"><label>金額 (NT$)</label><input type="number" id="ed-amt" placeholder="0" min="0" inputmode="decimal"></div>
     </div>
     <div class="fg" id="ed-cat-row"><label>類別</label><select id="ed-cat"></select></div>
+    <div class="fg" id="ed-income-dest-row" style="display:none"><label>入帳至</label>
+      <select id="ed-income-dest">
+        <option value="account">帳戶</option>
+        <option value="wallet">錢包（現金收入）</option>
+      </select>
+    </div>
     <div id="ed-credit-sec" style="display:none">
       <div class="fg"><label>信用卡</label><select id="ed-card"></select></div>
       <div class="fg"><label>幣別</label>
@@ -202,6 +208,12 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
     </div>
     <!-- 類別（收入/現金消費/刷卡消費顯示） -->
     <div class="fg" id="e-cat-row"><label>類別</label><select id="e-cat"></select></div>
+    <div class="fg" id="e-income-dest-row"><label>入帳至</label>
+      <select id="e-income-dest">
+        <option value="account">帳戶</option>
+        <option value="wallet">錢包（現金收入）</option>
+      </select>
+    </div>
     <!-- 刷卡消費專區 -->
     <div id="e-credit-sec" style="display:none">
       <div class="fg"><label>信用卡</label><select id="e-card"></select></div>
@@ -506,7 +518,7 @@ function getBalances(){
   let account=0,wallet=0,piggy=0,box=0,lend=0,yuanta=0;
   D.records.forEach(r=>{
     const amt=r.amount||0;
-    if(r.type==='income') account+=amt;
+    if(r.type==='income'){ if((r.to||'account')==='wallet') wallet+=amt; else account+=amt; }
     else if(r.type==='cash') wallet-=amt;
     else if(r.type==='transfer'){
       const f=r.from||'account', t=r.to||'wallet';
@@ -605,6 +617,7 @@ function setMode(m){
     document.getElementById('m-'+x).classList.toggle('on',x===m);
   });
   document.getElementById('e-cat-row').style.display=m==='transfer'?'none':'block';
+  document.getElementById('e-income-dest-row').style.display=m==='income'?'block':'none';
   document.getElementById('e-credit-sec').style.display=m==='credit'?'block':'none';
   document.getElementById('e-transfer-sec').style.display=m==='transfer'?'block':'none';
   document.getElementById('e-currency-wrap').style.display=m==='credit'?'block':'none';
@@ -721,7 +734,7 @@ function recHtml(r){
   if(r.type==='income'){
     return `<div class="ri">
       <div style="flex:1;min-width:0">
-        <div class="ri-cat">${r.category||'收入'}<span class="badge" style="background:rgba(105,240,174,.15);color:var(--grn)">→帳戶</span></div>
+        <div class="ri-cat">${r.category||'收入'}<span class="badge" style="background:rgba(105,240,174,.15);color:var(--grn)">${(r.to||'account')==='wallet'?'→錢包':'→帳戶'}</span></div>
         <div class="ri-sub">${r.date}${r.note?' · '+r.note:''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -788,7 +801,7 @@ async function saveRecord(){
 
   if(entryMode==='income'||entryMode==='cash'){
     rec.category=cat;
-    if(entryMode==='income') rec.to='account';
+    if(entryMode==='income') rec.to=document.getElementById('e-income-dest').value||'account';
     else rec.from='wallet';
   } else if(entryMode==='credit'){
     const cardSel=document.getElementById('e-card');
@@ -852,6 +865,7 @@ function setEditMode(m){
     document.getElementById('edm-'+x).classList.toggle('on',x===m);
   });
   document.getElementById('ed-cat-row').style.display=m==='transfer'?'none':'block';
+  document.getElementById('ed-income-dest-row').style.display=m==='income'?'block':'none';
   document.getElementById('ed-credit-sec').style.display=m==='credit'?'block':'none';
   document.getElementById('ed-transfer-sec').style.display=m==='transfer'?'block':'none';
   if(m!=='transfer') document.getElementById('ed-creditpay-card-row').style.display='none';
@@ -870,6 +884,9 @@ function openEdit(id){
     const cardSel=document.getElementById('ed-card');
     cardSel.innerHTML=D.cards.map(c=>`<option value="${c.id}"${c.id===r.cardId?' selected':''}>${c.name}</option>`).join('');
     document.getElementById('ed-currency').value=r.currency||'NT';
+  }
+  if(m==='income'){
+    document.getElementById('ed-income-dest').value=r.to||'account';
   }
   if(m==='transfer'){
     document.getElementById('ed-from').value=r.from||'account';
@@ -894,7 +911,7 @@ async function saveEdit(){
   let updated={...D.records[idx],date,amount:amt,note,type:editMode};
   if(editMode==='income'||editMode==='cash'){
     updated.category=document.getElementById('ed-cat').value;
-    if(editMode==='income') updated.to='account';
+    if(editMode==='income') updated.to=document.getElementById('ed-income-dest').value||'account';
     else updated.from='wallet';
   } else if(editMode==='credit'){
     updated.category=document.getElementById('ed-cat').value;
