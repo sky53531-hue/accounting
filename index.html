@@ -714,7 +714,7 @@ async function confirmQcp(){
   if(!_qcpCardId) return;
   const amt=parseFloat(document.getElementById('qcp-amt').value)||0;
   const card=D.cards.find(c=>c.id===_qcpCardId);
-  D.records.push({id:Date.now(),type:'transfer',from:'account',to:'creditpay',cardId:_qcpCardId,amount:amt,date:todayStr()});
+  D.records.push({id:uid(),type:'transfer',from:'account',to:'creditpay',cardId:_qcpCardId,amount:amt,date:todayStr()});
   document.getElementById('qcp-modal').style.display='none';
   await saveData();
   updateBalanceCards();
@@ -1418,7 +1418,7 @@ async function saveCfg(){
       await saveData();
       tip(`✓ 已上傳本機資料：${D.cards.length}張卡，${D.records.length}筆紀錄`);
     } else {
-      D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],...remote};
+      D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],resets:[],...remote};
       if(!D.categories.length) D.categories=[...DEF_CATS];
       migrateAll(); localSave();
       tip(`✓ 已從雲端載入：${D.cards.length}張卡，${D.records.length}筆紀錄`);
