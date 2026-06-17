@@ -669,13 +669,13 @@ function cpWindowStart(billingDate){
   // Returns the date string (YYYY-MM-DD) from which creditpay records count for this card.
   // Window resets the day AFTER (billingDate + 20 days), so we find the most recent
   // such reset point that is <= today, then return the next day as window start.
-  const today=new Date(); today.setHours(23,59,59,999);
+  const today=new Date(); today.setHours(0,0,0,0); // 今天午夜，到期日當天仍算舊視窗
   const y=today.getFullYear(), m=today.getMonth(); // m: 0-indexed
   for(let off=0;off<=24;off++){
     let by=y, bm=m-off;
     while(bm<0){bm+=12;by--;}
     const reset=new Date(by,bm,billingDate+20); // JS auto-handles overflow (e.g. 35→next month)
-    if(reset<=today){
+    if(reset<today){  // 嚴格小於：隔天才算進入新視窗
       const start=new Date(reset); start.setDate(start.getDate()+1);
       return start.toISOString().slice(0,10);
     }
