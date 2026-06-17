@@ -852,7 +852,7 @@ async function saveRecord(){
 
 async function delRec(id){
   if(!confirm('確定刪除此筆記錄？')) return;
-  D.records=D.records.filter(r=>r.id!==id);
+  D.records=D.records.filter(r=>String(r.id)!==String(id));
   loading(true); await saveData(); loading(false);
   tip('已刪除');
   refreshCurrentView();
@@ -871,8 +871,8 @@ function setEditMode(m){
   if(m!=='transfer') document.getElementById('ed-creditpay-card-row').style.display='none';
 }
 function openEdit(id){
-  const r=D.records.find(r=>r.id===id); if(!r) return;
-  editId=id;
+  const r=D.records.find(r=>String(r.id)===String(id)); if(!r) return;
+  editId=r.id;
   const m=r.type||'cash';
   editMode=m;
   setEditMode(m);
@@ -903,7 +903,7 @@ function closeEdit(){
 }
 async function saveEdit(){
   if(!editId) return;
-  const idx=D.records.findIndex(r=>r.id===editId); if(idx<0) return;
+  const idx=D.records.findIndex(r=>String(r.id)===String(editId)); if(idx<0) return;
   const date=document.getElementById('ed-date').value;
   const amt=parseFloat(document.getElementById('ed-amt').value);
   if(!date||!amt||amt<=0){ tip('請填寫日期和金額',false); return; }
@@ -935,7 +935,7 @@ async function saveEdit(){
 async function delRecFromEdit(){
   if(!editId) return;
   if(!confirm('確定刪除此筆記錄？')) return;
-  D.records=D.records.filter(r=>r.id!==editId);
+  D.records=D.records.filter(r=>String(r.id)!==String(editId));
   loading(true); await saveData(); loading(false);
   tip('已刪除'); closeEdit(); refreshCurrentView();
 }
