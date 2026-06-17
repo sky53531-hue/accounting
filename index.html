@@ -693,7 +693,7 @@ function renderCreditpaySection(){
     const lastPayDate=pays.length?pays.map(r=>r.date).sort().pop():'';
     const clears=(D.cpClears||[]).filter(c=>c.cardId===card.id&&c.date>=ws);
     const lastClearDate=clears.length?clears.map(c=>c.date).sort().pop():'';
-    const paid=amt>0&&(!lastClearDate||lastPayDate>lastClearDate);
+    const paid=pays.length>0&&(!lastClearDate||lastPayDate>lastClearDate);
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr)">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:18px;cursor:pointer" onclick="quickCreditpay('${card.id}')">${paid?'✅':'⬜'}</span>
@@ -722,7 +722,7 @@ function quickCreditpay(cardId){
 async function confirmQcp(){
   if(!_qcpCardId) return;
   const amt=parseFloat(document.getElementById('qcp-amt').value)||0;
-  if(!amt||amt<=0){ tip('請輸入有效金額',false); return; }
+  if(amt===0&&!confirm('確定記錄 $0 繳費？\n（本期應繳金額為 0 時使用）')) return;
   const card=D.cards.find(c=>c.id===_qcpCardId);
   D.records.push({id:uid(),type:'transfer',from:'account',to:'creditpay',cardId:_qcpCardId,amount:amt,date:todayStr()});
   document.getElementById('qcp-modal').style.display='none';
