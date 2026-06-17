@@ -690,7 +690,7 @@ function renderCreditpaySection(){
     const ws=cpWindowStart(card.billingDate);
     const pays=D.records.filter(r=>r.type==='transfer'&&r.to==='creditpay'&&r.cardId===card.id&&r.date>=ws);
     const amt=pays.reduce((s,r)=>s+r.amount,0);
-    const paid=pays.length>0;
+    const paid=amt>0;
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr)">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:18px;cursor:pointer" onclick="quickCreditpay('${card.id}')">${paid?'✅':'⬜'}</span>
@@ -713,6 +713,7 @@ function quickCreditpay(cardId){
 async function confirmQcp(){
   if(!_qcpCardId) return;
   const amt=parseFloat(document.getElementById('qcp-amt').value)||0;
+  if(!amt||amt<=0){ tip('請輸入有效金額',false); return; }
   const card=D.cards.find(c=>c.id===_qcpCardId);
   D.records.push({id:uid(),type:'transfer',from:'account',to:'creditpay',cardId:_qcpCardId,amount:amt,date:todayStr()});
   document.getElementById('qcp-modal').style.display='none';
