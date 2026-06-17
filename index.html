@@ -1078,7 +1078,7 @@ function renderCreditPage(){
   document.getElementById('cr-empty').style.display='none';
   document.getElementById('cr-main').style.display='block';
   document.getElementById('cr-tabs').innerHTML=
-    `<option value="" disabled>選擇卡片…</option>`+D.cards.map((c,i)=>`<option value="${i}">${c.name}</option>`).join('');
+    `<option value="" disabled>選擇卡片…</option>`+D.cards.map((c,i)=>`<option value="${i}">${c.name}（${c.billingDate}號結帳）</option>`).join('');
   if(crCardIdx===-1){
     document.getElementById('cr-all-btn').classList.add('on');
     document.getElementById('cr-tabs').value='';
