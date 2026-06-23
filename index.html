@@ -1145,7 +1145,7 @@ function renderAllCards(){
       allInst.push({r,card,paid,remain:r.installmentTotal-paid,monthly:Math.round(r.amount/r.installmentTotal)});
     });
   });
-  allInst.sort((a,b)=>b.remain-a.remain);
+  allInst.sort((a,b)=>a.remain-b.remain);
   const unpaidInst=allInst.filter(x=>x.remain>0);
   const instEl=document.getElementById('cr-all-inst');
   if(!unpaidInst.length){ instEl.innerHTML='<div class="empty">目前無未結清分期</div>'; }
