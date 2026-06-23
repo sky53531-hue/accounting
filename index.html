@@ -1166,8 +1166,9 @@ function renderAllCards(){
         </div>
         <div class="prog"><div class="prog-fill" style="width:${pct}%"></div></div>
       </div>`;
-    }).join('')+`<div style="text-align:right;padding:10px 0 4px;font-size:13px;color:var(--tx2)">
-      未結清分期餘額合計：<span style="color:var(--red);font-weight:700">${nt(allInst.filter(x=>x.remain>0).reduce((s,x)=>s+x.remain*x.monthly,0))}</span>
+    }).join('')+`<div style="padding:10px 0 4px;border-top:1px solid var(--bdr);margin-top:4px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;font-size:13px;color:var(--tx2)">
+      <div>本期分期應繳合計：<span style="color:var(--org);font-weight:700">${nt(allInst.filter(x=>x.remain>0).reduce((s,x)=>s+x.monthly,0))}</span></div>
+      <div>未結清分期餘額合計：<span style="color:var(--red);font-weight:700">${nt(allInst.filter(x=>x.remain>0).reduce((s,x)=>s+x.remain*x.monthly,0))}</span></div>
     </div>`;
   }
   renderAllRecurring();
