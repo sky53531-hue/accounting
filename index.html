@@ -462,9 +462,8 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   <div style="background:var(--surface,#1e1e1e);border-radius:16px;padding:20px;max-width:480px;width:100%;margin:auto;position:relative">
     <button onclick="document.getElementById('ver-modal').style.display='none'" style="position:absolute;top:12px;right:14px;border:none;background:none;font-size:20px;cursor:pointer;color:#888">✕</button>
     <div style="font-size:15px;font-weight:700;margin-bottom:4px">🔍 版本紀錄查詢</div>
-    <div style="font-size:12px;color:#888;margin-bottom:14px">查詢本機快照或 JSONBin 歷史版本，找回遺失的資料</div>
+    <div style="font-size:12px;color:#888;margin-bottom:14px">自動備份本機快照，雲端覆蓋前可從這裡還原</div>
     <div id="ver-result" style="font-size:13px;color:#ccc;margin-bottom:12px"></div>
-    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="scanVersions()">🔄 掃描 JSONBin 版本</button>
     <div id="ver-list"></div>
   </div>
 </div>
