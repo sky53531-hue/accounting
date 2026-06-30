@@ -571,7 +571,7 @@ function saveSnapshot(){
     var snaps=[];
     try{ snaps=JSON.parse(localStorage.getItem('acct_snaps')||'[]'); }catch(e){}
     snaps.unshift({ts:Date.now(),records:(parsed.records||[]).length,data:s});
-    if(snaps.length>3) snaps=snaps.slice(0,3);
+    if(snaps.length>10) snaps=snaps.slice(0,10);
     localStorage.setItem('acct_snaps',JSON.stringify(snaps));
   }catch(e){}
 }
