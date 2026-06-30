@@ -440,10 +440,23 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   </div>
   <div class="card">
     <div class="card-title">資料管理</div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;margin-bottom:8px">
       <button class="btn btn-ghost" style="flex:1" onclick="reloadAll()">重新載入</button>
       <button class="btn btn-danger" style="flex:1" onclick="clearCache()">清除本機快取</button>
     </div>
+    <button class="btn btn-ghost" style="width:100%" onclick="openVersionRestore()">🔍 查詢版本紀錄／還原</button>
+  </div>
+</div>
+
+<!-- 版本還原 Modal -->
+<div id="ver-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px">
+  <div style="background:var(--surface,#1e1e1e);border-radius:16px;padding:20px;max-width:480px;width:100%;margin:auto;position:relative">
+    <button onclick="document.getElementById('ver-modal').style.display='none'" style="position:absolute;top:12px;right:14px;border:none;background:none;font-size:20px;cursor:pointer;color:#888">✕</button>
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">🔍 版本紀錄查詢</div>
+    <div style="font-size:12px;color:#888;margin-bottom:14px">查詢 JSONBin 歷史版本，找回遺失的資料</div>
+    <div id="ver-result" style="font-size:13px;color:#ccc;margin-bottom:12px">按下「開始掃描」查詢版本</div>
+    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="scanVersions()">🔄 開始掃描</button>
+    <div id="ver-list"></div>
   </div>
 </div>
 
@@ -1501,6 +1514,61 @@ async function reloadAll(){
 function clearCache(){
   if(!confirm('確定清除本機快取？不影響 JSONBin 雲端資料。')) return;
   localStorage.removeItem('acct_d'); tip('已清除本機快取');
+}
+
+// ── 版本還原 ─────────────────────────────────────────────────────────────
+function openVersionRestore(){
+  document.getElementById('ver-modal').style.display='flex';
+  document.getElementById('ver-list').innerHTML='';
+  document.getElementById('ver-result').textContent='按下「開始掃描」查詢版本';
+}
+async function scanVersions(){
+  if(!CFG.apiKey||!CFG.binId){ tip('請先設定 API Key 和 BIN ID',false); return; }
+  var el=document.getElementById('ver-result');
+  var listEl=document.getElementById('ver-list');
+  el.textContent='掃描中...';
+  listEl.innerHTML='';
+  try{
+    var r=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}/latest`,{headers:{'X-Master-Key':CFG.apiKey}});
+    var j=await r.json();
+    var latest=j.metadata.version;
+    el.textContent='目前最新版本：v' + latest + '（' + D.records.length + ' 筆紀錄）。掃描前 10 版...';
+    var results=[];
+    for(var v=latest;v>=Math.max(1,latest-10);v--){
+      try{
+        var rv=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}?version=${v}`,{headers:{'X-Master-Key':CFG.apiKey}});
+        var jv=await rv.json();
+        var recs=jv.record.records||[];
+        var jun29=recs.filter(function(x){return x.date==='2026-06-29';}).length;
+        results.push({v:v,total:recs.length,jun29:jun29,record:jv.record});
+      }catch(e){}
+    }
+    el.textContent='掃描完成，找到以下版本：';
+    listEl.innerHTML=results.map(function(x){
+      var highlight=x.jun29>results[0].jun29?'border:1px solid #4ade80':'border:1px solid #333';
+      return '<div style="'+highlight+';border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#2a2a2a">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div>'+
+        '<span style="font-weight:700">v'+x.v+'</span>'+
+        '<span style="color:#888;font-size:12px;margin-left:8px">共 '+x.total+' 筆　6/29 有 '+x.jun29+' 筆</span>'+
+        '</div>'+
+        '<button onclick="restoreVersion('+x.v+')" style="font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid #4ade80;background:transparent;color:#4ade80;cursor:pointer">還原</button>'+
+        '</div></div>';
+    }).join('');
+  }catch(e){ el.textContent='掃描失敗：'+e.message; }
+}
+async function restoreVersion(v){
+  if(!confirm('確定還原到 v'+v+'？\n目前資料將被覆蓋，此操作無法復原。')) return;
+  try{
+    var r=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}?version=${v}`,{headers:{'X-Master-Key':CFG.apiKey}});
+    var j=await r.json();
+    D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],resets:[],cpClears:[],...j.record};
+    migrateAll(); localSave();
+    await saveData();
+    rebuildCatSelect(); rebuildCardSelect(); renderRecent(); renderCardList(); renderCatList(); updateBalanceCards();
+    document.getElementById('ver-modal').style.display='none';
+    tip('✓ 已還原至 v'+v);
+  }catch(e){ tip('還原失敗：'+e.message,false); }
 }
 
 // ── Init ────────────────────────────────────────────────────────────────
