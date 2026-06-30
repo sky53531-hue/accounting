@@ -448,14 +448,23 @@ body{background:var(--bg);color:var(--tx);font-family:'Segoe UI',system-ui,sans-
   </div>
 </div>
 
+<!-- 雲端儲存失敗橫幅 -->
+<div id="save-err-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:1000;background:#dc2626;color:#fff;padding:14px 16px;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.4)">
+  <div style="flex:1">
+    <div style="font-weight:700;font-size:14px">⚠ 雲端儲存失敗！</div>
+    <div style="font-size:12px;opacity:.9">資料只存在本機，請確認網路後手動按「重新載入」或重新開啟 App。若不處理，下次開啟 App 可能遺失本次記帳。</div>
+  </div>
+  <button onclick="document.getElementById('save-err-banner').style.display='none'" style="border:none;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px">知道了</button>
+</div>
+
 <!-- 版本還原 Modal -->
 <div id="ver-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px">
   <div style="background:var(--surface,#1e1e1e);border-radius:16px;padding:20px;max-width:480px;width:100%;margin:auto;position:relative">
     <button onclick="document.getElementById('ver-modal').style.display='none'" style="position:absolute;top:12px;right:14px;border:none;background:none;font-size:20px;cursor:pointer;color:#888">✕</button>
     <div style="font-size:15px;font-weight:700;margin-bottom:4px">🔍 版本紀錄查詢</div>
-    <div style="font-size:12px;color:#888;margin-bottom:14px">查詢 JSONBin 歷史版本，找回遺失的資料</div>
-    <div id="ver-result" style="font-size:13px;color:#ccc;margin-bottom:12px">按下「開始掃描」查詢版本</div>
-    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="scanVersions()">🔄 開始掃描</button>
+    <div style="font-size:12px;color:#888;margin-bottom:14px">查詢本機快照或 JSONBin 歷史版本，找回遺失的資料</div>
+    <div id="ver-result" style="font-size:13px;color:#ccc;margin-bottom:12px"></div>
+    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="scanVersions()">🔄 掃描 JSONBin 版本</button>
     <div id="ver-list"></div>
   </div>
 </div>
@@ -554,6 +563,25 @@ function localLoad(){ const s=localStorage.getItem('acct_d'); if(s) try{ D={...D
 function cfgSave(){ localStorage.setItem('acct_c',JSON.stringify(CFG)); }
 function cfgLoad(){ const s=localStorage.getItem('acct_c'); if(s) try{ CFG={...CFG,...JSON.parse(s)}; }catch(e){} }
 
+// 每次雲端覆蓋前，先把本機資料存成快照（最多保留3份）
+function saveSnapshot(){
+  try{
+    var s=localStorage.getItem('acct_d');
+    if(!s) return;
+    var parsed=JSON.parse(s);
+    var snaps=[];
+    try{ snaps=JSON.parse(localStorage.getItem('acct_snaps')||'[]'); }catch(e){}
+    snaps.unshift({ts:Date.now(),records:(parsed.records||[]).length,data:s});
+    if(snaps.length>3) snaps=snaps.slice(0,3);
+    localStorage.setItem('acct_snaps',JSON.stringify(snaps));
+  }catch(e){}
+}
+
+function showSaveErrBanner(){
+  var b=document.getElementById('save-err-banner');
+  if(b){ b.style.display='flex'; }
+}
+
 // ── JSONBin ────────────────────────────────────────────────────────────
 async function loadData(showTip){
   if(!CFG.apiKey||!CFG.binId){ localLoad(); return; }
@@ -562,6 +590,7 @@ async function loadData(showTip){
     const r=await fetch(`https://api.jsonbin.io/v3/b/${CFG.binId}/latest`,{headers:{'X-Master-Key':CFG.apiKey}});
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j=await r.json();
+    saveSnapshot(); // 覆蓋前先備份本機資料
     D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],resets:[],cpClears:[],...j.record};
     if(!D.categories.length) D.categories=[...DEF_CATS];
     migrateAll();
@@ -578,7 +607,7 @@ async function saveData(){
       method:'PUT',headers:{'X-Master-Key':CFG.apiKey,'Content-Type':'application/json'},body:JSON.stringify(D)
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
-  }catch(e){ tip('雲端儲存失敗，已存本機',false); }
+  }catch(e){ showSaveErrBanner(); tip('雲端儲存失敗，已存本機',false); }
 }
 async function createBin(){
   CFG.apiKey=document.getElementById('s-key').value.trim();
@@ -1520,7 +1549,41 @@ function clearCache(){
 function openVersionRestore(){
   document.getElementById('ver-modal').style.display='flex';
   document.getElementById('ver-list').innerHTML='';
-  document.getElementById('ver-result').textContent='按下「開始掃描」查詢版本';
+  // 顯示本機快照
+  var snaps=[];
+  try{ snaps=JSON.parse(localStorage.getItem('acct_snaps')||'[]'); }catch(e){}
+  var el=document.getElementById('ver-result');
+  if(snaps.length){
+    var snapHtml='<div style="font-size:13px;font-weight:600;margin-bottom:6px">📦 本機快照（雲端覆蓋前自動備份）</div>'+
+      snaps.map(function(s,i){
+        var d=new Date(s.ts);
+        var dt=d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0')+
+          ' '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+        return '<div style="border:1px solid #444;border-radius:8px;padding:10px 12px;margin-bottom:6px;background:#2a2a2a;display:flex;justify-content:space-between;align-items:center">'+
+          '<div><span style="font-weight:700">快照 '+(i+1)+'</span><span style="color:#888;font-size:12px;margin-left:8px">'+dt+'　共 '+s.records+' 筆</span></div>'+
+          '<button onclick="restoreSnapshot('+i+')" style="font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid #4ade80;background:transparent;color:#4ade80;cursor:pointer">還原</button>'+
+          '</div>';
+      }).join('')+
+      '<div style="font-size:12px;color:#888;margin-bottom:14px">↑ 上方是本機快照，不需要網路即可還原</div>';
+    el.innerHTML=snapHtml;
+  } else {
+    el.textContent='目前無本機快照（快照在下次雲端同步時自動建立）';
+  }
+}
+
+function restoreSnapshot(idx){
+  var snaps=[];
+  try{ snaps=JSON.parse(localStorage.getItem('acct_snaps')||'[]'); }catch(e){}
+  if(!snaps[idx]){ tip('快照不存在',false); return; }
+  if(!confirm('確定還原這份快照？目前資料將被覆蓋。')) return;
+  try{
+    var parsed=JSON.parse(snaps[idx].data);
+    D={cards:[],categories:[...DEF_CATS],records:[],recurring:[],resets:[],cpClears:[],...parsed};
+    migrateAll(); localSave();
+    rebuildCatSelect(); rebuildCardSelect(); renderRecent(); renderCardList(); renderCatList(); updateBalanceCards();
+    document.getElementById('ver-modal').style.display='none';
+    tip('✓ 已從快照還原');
+  }catch(e){ tip('快照還原失敗：'+e.message,false); }
 }
 async function scanVersions(){
   if(!CFG.apiKey||!CFG.binId){ tip('請先設定 API Key 和 BIN ID',false); return; }
